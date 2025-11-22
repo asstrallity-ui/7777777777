@@ -22,6 +22,8 @@
             user-select: none;
         }
 
+        /* Снежинки */
+
         .snowflake {
             position: absolute;
             color: rgba(210, 230, 255, 0.95);
@@ -33,11 +35,22 @@
             pointer-events: none;
             z-index: 0;
         }
+
         @keyframes snowfall {
-            0%   { transform: translateY(-10px) translateX(0) scale(0.8); opacity: 0; }
-            10%  { opacity: 1; }
-            90%  { opacity: 1; }
-            100% { transform: translateY(100vh) translateX(25px) scale(1.05); opacity: 0; }
+            0% {
+                transform: translateY(-10px) translateX(0) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) translateX(25px) scale(1.05);
+                opacity: 0;
+            }
         }
 
         .sidebar {
@@ -163,7 +176,7 @@
             padding: 30px;
             overflow-y: auto;
             background: linear-gradient(135deg, #0f1419 0%, #151a21 100%);
-            position: relative; /* важно для прикреплённого окна обновления */
+            position: relative; /* нужно для прикреплённого окна обновления */
             z-index: 1;
         }
 
@@ -429,7 +442,202 @@
             color: #c1cfdd;
         }
 
-        /* окно обновления, прикреплённое к основному контенту */
+        .loading { color: #7a8a9a; font-size: 14px; }
+        .error {
+            color: #ff6b6b;
+            padding: 20px;
+            background: rgba(255, 107, 107, 0.08);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 107, 107, 0.2);
+        }
+
+        /* Модалка установки модов */
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-dialog {
+            background: rgba(21, 26, 33, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(139, 182, 219, 0.2);
+            border-radius: 15px;
+            width: 450px;
+            max-width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-dialog {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            padding: 22px 25px;
+            border-bottom: 1px solid rgba(139, 182, 219, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-header i {
+            font-size: 22px;
+            color: #8bb6db;
+        }
+
+        .modal-title {
+            font-family: "Rajdhani", sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: #e8f4fa;
+            flex: 1;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border: none;
+            color: #7a8a9a;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(139, 182, 219, 0.1);
+            color: #e8f4fa;
+        }
+
+        .modal-body { padding: 25px; }
+
+        .modal-message {
+            color: #a0b0c0;
+            font-size: 15px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(15, 20, 25, 0.6);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            margin-top: 15px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(139, 182, 219, 0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4a9eff 0%, #8bb6db 50%, #4a9eff 100%);
+            background-size: 200% 100%;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.4s ease;
+            animation: shimmer 1.8s infinite;
+            box-shadow: 0 0 15px rgba(74, 158, 255, 0.5);
+        }
+
+        @keyframes shimmer {
+            0%   { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #8bb6db;
+            font-size: 13px;
+            margin-top: 12px;
+            font-weight: 500;
+        }
+
+        .status-message {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border-radius: 10px;
+            margin-top: 18px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-message.show { display: flex; }
+        .status-message.success {
+            background: rgba(74, 158, 255, 0.15);
+            border: 1px solid rgba(74, 158, 255, 0.3);
+            color: #4a9eff;
+        }
+
+        .status-message.error {
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+        }
+
+        .status-message i { font-size: 20px; }
+
+        .modal-footer {
+            padding: 18px 25px;
+            border-top: 1px solid rgba(139, 182, 219, 0.15);
+            display: none;
+            justify-content: flex-end;
+        }
+
+        .modal-footer.show { display: flex; }
+
+        .modal-btn {
+            padding: 11px 28px;
+            background: linear-gradient(135deg, rgba(139, 182, 219, 0.15) 0%, rgba(139, 182, 219, 0.08) 100%);
+            border: 1px solid rgba(139, 182, 219, 0.2);
+            color: #8bb6db;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .modal-btn:hover {
+            background: linear-gradient(135deg, rgba(139, 182, 219, 0.25) 0%, rgba(139, 182, 219, 0.15) 100%);
+            border-color: rgba(139, 182, 219, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Прикреплённая панель обновления внизу справа */
+
         #updateToast {
             position: absolute;
             right: 32px;
@@ -515,15 +723,6 @@
 
         .update-toast-status.error { color: #ff6b6b; }
 
-        .loading { color: #7a8a9a; font-size: 14px; }
-        .error {
-            color: #ff6b6b;
-            padding: 20px;
-            background: rgba(255, 107, 107, 0.08);
-            border-radius: 8px;
-            border: 1px solid rgba(255, 107, 107, 0.2);
-        }
-
         #game-path-input { display: none; }
     </style>
 </head>
@@ -569,7 +768,7 @@
     <div class="snowflake" style="left: 60%; top: -18%; animation-duration: 25s; animation-delay: 4s;">✻</div>
     <div class="snowflake" style="left: 85%; top: -12%; animation-duration: 21s; animation-delay: 6s;">✻</div>
 
-    <!-- таб Моды -->
+    <!-- Моды -->
     <div id="tab-mods" class="tab-content active">
         <div class="content-header">
             <h2>ДОСТУПНЫЕ МОДЫ</h2>
@@ -583,7 +782,7 @@
         </div>
     </div>
 
-    <!-- таб Настройки -->
+    <!-- Настройки -->
     <div id="tab-settings" class="tab-content">
         <h2 style="margin-bottom: 25px;">НАСТРОЙКИ</h2>
 
@@ -608,7 +807,7 @@
         </div>
     </div>
 
-    <!-- таб Информация -->
+    <!-- Информация -->
     <div id="tab-info" class="tab-content">
         <h2 style="margin-bottom: 25px;">ИНФОРМАЦИЯ</h2>
 
@@ -656,6 +855,7 @@
 
 <input type="text" id="game-path-input" readonly>
 
+<!-- Модалка установки модов -->
 <div id="installModal" class="modal-overlay">
     <div class="modal-dialog">
         <div class="modal-header">
@@ -709,6 +909,8 @@
         });
     }
 
+    // Модалка установки модов
+
     function showModal() {
         document.getElementById("installModal").classList.add("show");
         resetModal();
@@ -750,6 +952,8 @@
         statusMsg.querySelector("i").className = "fas fa-exclamation-circle";
     }
 
+    // Окно обновления лаунчера
+
     function showUpdateToast() {
         const toast = document.getElementById("updateToast");
         document.getElementById("updateProgressBar").style.width = "0%";
@@ -765,6 +969,8 @@
     function closeUpdateToast() {
         document.getElementById("updateToast").classList.remove("show");
     }
+
+    // percent: 0..100, message: текст, speedText: "X МБ/с"
 
     function updateUpdateProgress(percent, message, speedText) {
         document.getElementById("updateProgressBar").style.width = percent + "%";
@@ -786,6 +992,8 @@
         st.className = "update-toast-status error";
         st.style.display = "block";
     }
+
+    // Загрузка модов
 
     function refreshMods() {
         if (isRefreshing) return;
