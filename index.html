@@ -565,20 +565,26 @@
             try {
                 const response = await fetch('https://raw.githubusercontent.com/asstrallity-ui/Tanks_Blitz_Mods_Files/main/mods.json');
                 modsData = await response.json();
+                console.log('Loaded mods data:', JSON.stringify(modsData, null, 2));
                 renderMods();
             } catch (error) {
+                console.error('Failed to load mods:', error);
                 document.getElementById('mods-list').innerHTML = '<p style="color: #ff8a80;">Ошибка загрузки модов. Проверьте подключение.</p>';
             }
         }
 
         function renderMods() {
             const container = document.getElementById('mods-list');
-            if (modsData.length === 0) {
+            if (!modsData || modsData.length === 0) {
                 container.innerHTML = '<p style="color: #aec5dc;">Моды не найдены.</p>';
                 return;
             }
 
-            container.innerHTML = modsData.map((mod, index) => `
+            container.innerHTML = modsData.map((mod, index) => {
+                // Детальное логирование для отладки
+                console.log(`Mod ${index}:`, JSON.stringify(mod, null, 2));
+                
+                return `
                 <div class="mod-card">
                     ${mod.image 
                         ? `<img src="${mod.image}" alt="${mod.name || 'Мод'}" class="mod-image" onerror="this.outerHTML='<div class=\\'mod-image-placeholder\\'>📦</div>'">` 
@@ -590,18 +596,38 @@
                         <button class="install-btn" data-mod-index="${index}">Установить</button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
 
             // Добавляем обработчики событий для всех кнопок установки
             document.querySelectorAll('.install-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const modIndex = parseInt(this.getAttribute('data-mod-index'));
                     const mod = modsData[modIndex];
-                    if (mod && mod.url) {
-                        install(mod.url, mod.name);
-                    } else {
-                        console.error('Mod data is incomplete:', mod);
+                    
+                    // Детальное логирование данных мода
+                    console.log('Install button clicked for mod index:', modIndex);
+                    console.log('Mod data:', JSON.stringify(mod, null, 2));
+                    
+                    // Проверяем наличие url с использованием hasOwnProperty
+                    if (!mod) {
+                        console.error('Mod is null or undefined at index:', modIndex);
+                        return;
                     }
+                    
+                    if (!mod.hasOwnProperty('url')) {
+                        console.error('Mod does not have "url" property. Available properties:', Object.keys(mod));
+                        console.error('Full mod object:', JSON.stringify(mod, null, 2));
+                        return;
+                    }
+                    
+                    if (!mod.url || mod.url.trim() === '') {
+                        console.error('Mod url is empty or invalid:', mod.url);
+                        console.error('Full mod object:', JSON.stringify(mod, null, 2));
+                        return;
+                    }
+                    
+                    // Все проверки пройдены, вызываем установку
+                    install(mod.url, mod.name || 'Мод без названия');
                 });
             });
         }
