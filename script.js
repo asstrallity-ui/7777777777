@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2600); 
     
     loadMods(); 
+    setTimeout(checkEnvironment, 1000);
 });
 
 const REPO_BASE_URL = 'https://raw.githubusercontent.com/asstrallity-ui/Tanks_Blitz_Mods_Files/main/';
@@ -23,6 +24,14 @@ const progressBar = document.getElementById('progress-bar');
 const progressPercent = document.getElementById('progress-percent');
 
 let currentInstallMethod = 'sdls'; 
+let isAppEnvironment = false;
+
+function checkEnvironment() {
+    if (window.pywebview) {
+        isAppEnvironment = true;
+        document.querySelectorAll('.install-btn').forEach(btn => btn.disabled = false);
+    }
+}
 
 navItems.forEach(item => {
     item.addEventListener('click', () => {
@@ -119,6 +128,9 @@ function renderMods(mods) {
         const card = document.createElement('div');
         card.className = 'mod-card';
         
+        const disabledAttr = isAppEnvironment ? '' : 'disabled'; // Отключаем только визуально для надежности
+        const btnText = isAppEnvironment ? 'Установить' : 'Доступно в приложении';
+        
         card.innerHTML = `
             <img src="${imageUrl}" class="card-image" alt="${mod.name}">
             <div class="card-content">
@@ -134,7 +146,6 @@ function renderMods(mods) {
 }
 
 function startInstallProcess(id, name, url) {
-    // 1. Проверка: Если это браузер (нет pywebview) -> Показываем ошибку
     if (!window.pywebview) {
         installView.classList.add('view-hidden');
         successView.classList.add('view-hidden');
@@ -145,7 +156,6 @@ function startInstallProcess(id, name, url) {
         return;
     }
 
-    // 2. Если это приложение -> Запускаем установку
     if (!url || url === "undefined") return;
     
     installView.classList.remove('view-hidden');
@@ -155,7 +165,7 @@ function startInstallProcess(id, name, url) {
     progressBar.style.width = "0%";
     progressPercent.innerText = "0%";
     modalTitle.innerText = `Установка: ${name}`;
-    modalStatus.innerText = "Подготовка...";
+    modalStatus.innerText = "Подключение...";
     modal.classList.remove('hidden');
     
     window.pywebview.api.install_mod(id, url, currentInstallMethod);
@@ -164,7 +174,8 @@ function startInstallProcess(id, name, url) {
 window.updateRealProgress = function(percent, text) {
     progressBar.style.width = percent + "%";
     progressPercent.innerText = percent + "%";
-    modalStatus.innerText = text;
+    // Текст уже должен приходить в формате "Скачивание: 45% (2.1 MB/s)" из Python
+    modalStatus.innerText = text; 
 }
 
 window.finishInstall = function(success, message) {
