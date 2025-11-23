@@ -14,7 +14,6 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; user-select: none; }
 
-/* Фон как в оригинале (радиальный градиент) */
 body { 
     background-color: var(--md-sys-color-background); 
     color: var(--md-sys-color-on-surface); 
@@ -24,21 +23,12 @@ body {
                       radial-gradient(circle at bottom left, #181a25 0%, transparent 40%); 
 }
 
-/* --- НОВЫЙ КРАСИВЫЙ ЗАГРУЗЧИК (ОСТАВЛЯЕМ) --- */
+/* --- ЗАГРУЗЧИК --- */
 #splash-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background-color: var(--md-sys-color-background);
-    background-image: 
-        radial-gradient(circle at top right, #2a2438 0%, transparent 50%), 
-        radial-gradient(circle at bottom left, #1e2030 0%, transparent 50%);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background-image: radial-gradient(circle at top right, #2a2438 0%, transparent 50%), radial-gradient(circle at bottom left, #1e2030 0%, transparent 50%);
+    z-index: 9999; display: flex; align-items: center; justify-content: center;
     transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
 }
 #splash-screen.fade-out { opacity: 0; visibility: hidden; pointer-events: none; transform: scale(1.05); }
@@ -51,7 +41,7 @@ body {
 .progress-fill { height: 100%; background: linear-gradient(90deg, var(--md-sys-color-primary), #eebcff); width: 0%; border-radius: 10px; box-shadow: 0 0 25px var(--md-sys-color-primary); animation: loadBar 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 @keyframes loadBar { 0% { width: 0%; } 20% { width: 25%; } 50% { width: 60%; } 100% { width: 100%; } }
 
-/* --- ОРИГИНАЛЬНЫЙ ИНТЕРФЕЙС (ВЕРНУЛ КАК БЫЛО) --- */
+/* --- UI (Original) --- */
 .app-container { display: flex; height: 100%; width: 100%; }
 .glass { background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); border: 1px solid var(--glass-border); }
 .sidebar { width: 260px; display: flex; flex-direction: column; padding: 20px; border-right: 1px solid var(--glass-border); z-index: 10; }
@@ -80,19 +70,9 @@ body {
 .card-title { font-size: 18px; font-weight: 500; margin-bottom: 8px; color: var(--md-sys-color-on-surface); }
 .card-desc { font-size: 14px; color: var(--md-sys-color-outline); margin-bottom: 16px; flex-grow: 1; line-height: 1.4; }
 
-/* КНОПКА */
 .install-btn { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); border: none; padding: 10px 20px; border-radius: 20px; font-weight: 500; cursor: pointer; width: 100%; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .install-btn:hover { opacity: 0.9; box-shadow: 0 4px 12px rgba(208, 188, 255, 0.3); }
 .install-btn:active { transform: scale(0.98); }
-
-/* Заблокированная кнопка (для веба) */
-.install-btn:disabled {
-    background-color: #333;
-    color: #666;
-    cursor: not-allowed;
-    box-shadow: none;
-    opacity: 1;
-}
 
 .settings-container { display: flex; flex-direction: column; gap: 16px; max-width: 800px; margin: 0 auto; width: 100%; }
 .setting-card { background: var(--md-sys-color-surface); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; transition: background-color 0.2s; }
@@ -106,22 +86,30 @@ body {
 input:checked + .slider { background-color: var(--md-sys-color-primary); border-color: var(--md-sys-color-primary); }
 input:checked + .slider:before { transform: translateX(20px); background-color: var(--md-sys-color-on-primary); width: 24px; height: 24px; bottom: 2px; left: 2px; }
 
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 1; visibility: visible; transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s; }
-.modal-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-.modal-content { width: 400px; min-height: 200px; background: var(--md-sys-color-surface); border-radius: 24px; padding: 32px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--md-sys-color-outline); transform: scale(1); transition: transform 0.3s ease-out; display: flex; flex-direction: column; justify-content: center; }
-.modal-overlay.hidden .modal-content { transform: scale(0.95); }
-.view-hidden { display: none !important; }
+/* Views content */
+#install-view h3 { font-size: 20px; margin-bottom: 8px; color: var(--md-sys-color-on-surface); }
+#install-view p { font-size: 14px; color: var(--md-sys-color-outline); margin-bottom: 24px; }
+#success-view, #error-view { display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 0.4s ease; }
 .success-icon { font-size: 64px; color: #4caf50; margin-bottom: 16px; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .error-icon { font-size: 64px; color: #ff5252; margin-bottom: 16px; animation: shake 0.5s ease-in-out; }
-#install-view h3, #success-view h3, #error-view h3 { font-size: 20px; margin-bottom: 8px; color: var(--md-sys-color-on-surface); }
-.error-text { font-size: 15px; color: var(--md-sys-color-on-surface); opacity: 0.9; }
-.progress-container { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin-bottom: 8px; margin-top: 16px; }
+#success-view h3, #error-view h3 { font-size: 20px; color: var(--md-sys-color-on-surface); }
+.error-text { font-size: 15px; color: var(--md-sys-color-on-surface); opacity: 0.9; text-align: center; line-height: 1.4; }
+.progress-container { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
 .progress-bar { width: 0%; height: 100%; background: var(--md-sys-color-primary); border-radius: 4px; transition: width 0.2s ease-out; box-shadow: 0 0 10px var(--md-sys-color-primary); }
 .progress-text { font-size: 12px; color: var(--md-sys-color-primary); font-weight: bold; }
+
 @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
 .loader-spinner { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: var(--md-sys-color-outline); }
 .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--md-sys-color-primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px; }
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--md-sys-color-outline); animation: popIn 0.5s ease-out; }
 .empty-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; color: var(--md-sys-color-primary); }
 @keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Original Modal Overlay & Content */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 1; visibility: visible; transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s; }
+.modal-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.modal-content { width: 400px; min-height: 200px; background: var(--md-sys-color-surface); border-radius: 24px; padding: 32px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--md-sys-color-outline); transform: scale(1); transition: transform 0.3s ease-out; display: flex; flex-direction: column; justify-content: center; }
+.modal-overlay.hidden .modal-content { transform: scale(0.95); }
+.view-hidden { display: none !important; }
