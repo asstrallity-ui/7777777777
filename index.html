@@ -12,10 +12,9 @@
 
     <div class="app-container">
         
-        <!-- Glassy Sidebar -->
+        <!-- SIDEBAR -->
         <aside class="sidebar">
             <div class="brand">
-                <!-- Новая SVG иконка "Кристалл/Прицел" -->
                 <div class="logo-icon">
                     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M20 4L4 12L20 20L36 12L20 4Z" fill="white" fill-opacity="0.9"/>
@@ -30,7 +29,6 @@
             </div>
 
             <nav class="nav-menu">
-                <!-- Вкладки теперь "реечные" -->
                 <button class="nav-item active" data-tab="tab-mods" onclick="onTabClick('tab-mods')">
                     <span class="indicator"></span>
                     <span class="label">Мои моды</span>
@@ -53,7 +51,7 @@
             </div>
         </aside>
 
-        <!-- Main Content Area -->
+        <!-- CONTENT -->
         <main class="main-content">
             
             <header class="content-header">
@@ -64,28 +62,23 @@
                 </div>
             </header>
 
-            <!-- Tab Panels -->
+            <!-- TAB: MODS -->
             <div id="tab-mods" class="tab-panel active">
-                <!-- Пустое состояние (Empty State) -->
-                <div class="empty-state">
-                    <div class="empty-icon">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                        </svg>
+                <div id="mods-container" class="mods-grid">
+                    <div class="empty-state">
+                        <p>Инициализация...</p>
                     </div>
-                    <h3>Нет активных модов</h3>
-                    <p>Выберите модпак для начала установки</p>
                 </div>
             </div>
 
+            <!-- TAB: INFO -->
             <div id="tab-info" class="tab-panel">
                 <div class="empty-state">
                     <p style="opacity: 0.5;">Информация о системе не загружена</p>
                 </div>
             </div>
 
+            <!-- TAB: METHODS -->
             <div id="tab-methods" class="tab-panel">
                 <div class="empty-state">
                    <p style="opacity: 0.5;">Методы установки не выбраны</p>
