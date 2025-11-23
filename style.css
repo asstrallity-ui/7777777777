@@ -41,10 +41,11 @@ body {
 .progress-fill { height: 100%; background: linear-gradient(90deg, var(--md-sys-color-primary), #eebcff); width: 0%; border-radius: 10px; box-shadow: 0 0 25px var(--md-sys-color-primary); animation: loadBar 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 @keyframes loadBar { 0% { width: 0%; } 20% { width: 25%; } 50% { width: 60%; } 100% { width: 100%; } }
 
-/* --- МОДАЛЬНОЕ ОКНО (ИСПРАВЛЕННОЕ ПОД СКРИНШОТ) --- */
+
+/* --- МОДАЛЬНОЕ ОКНО (ОТШЛИФОВАННОЕ) --- */
 .modal-overlay { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0, 0, 0, 0.85); /* Чуть темнее фон затемнения */
+    background: rgba(0, 0, 0, 0.85); 
     backdrop-filter: blur(5px); 
     z-index: 2000; display: flex; align-items: center; justify-content: center; 
     opacity: 1; visibility: visible; transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s; 
@@ -52,55 +53,71 @@ body {
 .modal-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
 .modal-content { 
-    width: 420px; 
-    min-height: 220px; 
-    background: #161616; /* Темный плоский фон как на скрине */
-    border-radius: 28px; /* Сильное скругление */
-    padding: 40px; 
+    width: 460px; /* Чуть шире для длинных названий */
+    min-height: 180px; 
+    background: #161616; 
+    border-radius: 24px; 
+    /* Уменьшенные вертикальные отступы (28px) */
+    padding: 28px 40px; 
     text-align: center; 
-    box-shadow: 0 20px 60px rgba(0,0,0,0.8); /* Мягкая тень, без обводки */
-    border: none; /* УБРАНА ОБВОДКА */
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8); 
+    border: none; 
     transform: scale(1); transition: transform 0.3s ease-out; 
     display: flex; flex-direction: column; justify-content: center; 
 }
 .modal-overlay.hidden .modal-content { transform: scale(0.95); }
 .view-hidden { display: none !important; }
 
-/* Контент внутри модалки */
+/* Типографика модалки */
 #install-view h3 { 
     font-size: 18px; 
     font-weight: 600; 
-    margin-bottom: 24px; 
+    margin-bottom: 20px; 
     color: #ffffff; 
     line-height: 1.4;
-}
-#install-view p { 
-    font-size: 13px; 
-    color: #938f99; /* Серый текст статуса */
-    margin: 0; 
+    /* Ограничение строк если название очень длинное */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-/* Прогресс бар в модалке */
+/* Прогресс бар */
 .progress-container { 
     width: 100%; 
-    height: 6px; 
-    background: rgba(255, 255, 255, 0.08); /* Очень темный трек */
-    border-radius: 3px; 
+    height: 8px; /* Чуть жирнее полоска */
+    background: rgba(255, 255, 255, 0.08); 
+    border-radius: 4px; 
     overflow: hidden; 
-    margin-bottom: 12px; 
+    margin-bottom: 10px; 
 }
 .progress-bar { 
     width: 0%; 
     height: 100%; 
-    background: var(--md-sys-color-primary); /* Фиолетовый */
-    border-radius: 3px; 
+    background: var(--md-sys-color-primary); 
+    border-radius: 4px; 
     transition: width 0.2s ease-out; 
-    box-shadow: 0 0 15px rgba(208, 188, 255, 0.4); /* Небольшое свечение */
+    box-shadow: 0 0 15px rgba(208, 188, 255, 0.4); 
 }
-.progress-text { 
+
+/* Нижняя строка (Flexbox) */
+.progress-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+#modal-status { 
+    font-size: 13px; 
+    color: #938f99; 
+    margin: 0; 
+}
+
+#progress-percent { 
     font-size: 13px; 
     color: var(--md-sys-color-primary); 
-    font-weight: 600; 
+    font-weight: 700; 
 }
 
 /* Статусы успеха/ошибки */
