@@ -5,9 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2600); 
     
     loadMods(); 
-    
-    // Проверка среды (ждём чуть-чуть, пока pywebview инжектится)
-    setTimeout(checkEnvironment, 1000);
 });
 
 const REPO_BASE_URL = 'https://raw.githubusercontent.com/asstrallity-ui/Tanks_Blitz_Mods_Files/main/';
@@ -26,18 +23,7 @@ const progressBar = document.getElementById('progress-bar');
 const progressPercent = document.getElementById('progress-percent');
 
 let currentInstallMethod = 'sdls'; 
-let isAppEnvironment = false; // Флаг: запущено в приложении или нет
 
-// Проверяем, доступны ли API
-function checkEnvironment() {
-    if (window.pywebview) {
-        isAppEnvironment = true;
-        // Если моды уже загрузились, разблокируем кнопки
-        document.querySelectorAll('.install-btn').forEach(btn => btn.disabled = false);
-    }
-}
-
-// Навигация
 navItems.forEach(item => {
     item.addEventListener('click', () => {
         navItems.forEach(nav => nav.classList.remove('active'));
@@ -129,23 +115,17 @@ function renderMods(mods) {
         let rawUrl = mod.file || mod.file_url || mod.url || "";
         let fullUrl = rawUrl;
         if (rawUrl && !rawUrl.startsWith('http')) { fullUrl = REPO_BASE_URL + rawUrl; }
-        
         const imageUrl = mod.image || "https://via.placeholder.com/400x220/111/fff?text=No+Image";
-        
         const card = document.createElement('div');
         card.className = 'mod-card';
-        // Создаем кнопку с атрибутом disabled по умолчанию
-        // Если isAppEnvironment == true, то убираем disabled сразу
-        const disabledAttr = isAppEnvironment ? '' : 'disabled';
-        const btnText = isAppEnvironment ? 'Установить' : 'Доступно в приложении';
         
         card.innerHTML = `
             <img src="${imageUrl}" class="card-image" alt="${mod.name}">
             <div class="card-content">
                 <h3 class="card-title">${mod.name || "Без названия"}</h3>
                 <p class="card-desc">${mod.description || ""}</p>
-                <button class="install-btn" ${disabledAttr} onclick="startInstallProcess('${mod.id}', '${mod.name}', '${fullUrl}')">
-                    <span class="material-symbols-outlined">download</span> ${btnText}
+                <button class="install-btn" onclick="startInstallProcess('${mod.id}', '${mod.name}', '${fullUrl}')">
+                    <span class="material-symbols-outlined">download</span> Установить
                 </button>
             </div>
         `;
@@ -154,7 +134,18 @@ function renderMods(mods) {
 }
 
 function startInstallProcess(id, name, url) {
-    if (!isAppEnvironment) return; // Двойная защита: если не приложение, выходим
+    // 1. Проверка: Если это браузер (нет pywebview) -> Показываем ошибку
+    if (!window.pywebview) {
+        installView.classList.add('view-hidden');
+        successView.classList.add('view-hidden');
+        errorView.classList.remove('view-hidden');
+        errorMessage.innerText = "Установка доступна только в приложении LOADER ASTR!";
+        modal.classList.remove('hidden');
+        setTimeout(closeModal, 3000);
+        return;
+    }
+
+    // 2. Если это приложение -> Запускаем установку
     if (!url || url === "undefined") return;
     
     installView.classList.remove('view-hidden');
