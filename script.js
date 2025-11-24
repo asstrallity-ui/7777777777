@@ -1,21 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
     const splash = document.getElementById('splash-screen');
-    
-    // Анимация скрытия загрузочного экрана
     setTimeout(() => { 
         splash.classList.add('fade-out'); 
     }, 2600); 
     
     loadMods(); 
-    
-    // Проверка среды через 1 секунду (чтобы pywebview успел прогрузиться)
     setTimeout(checkEnvironment, 1000);
 });
 
-// ССЫЛКИ (Раз ты сменил хостинг, убедись, что тут стоят актуальные ссылки)
-// Если у тебя свой сервер, замени REPO_BASE_URL на путь к папке с файлами
-const REPO_BASE_URL = 'https://raw.githubusercontent.com/asstrallity-ui/Tanks_Blitz_Mods_Files/main/'; 
-const REPO_JSON_URL = REPO_BASE_URL + 'mods.json';
+// Ссылка на папку на GitHub (используется как запасной вариант для старых относительных путей в JSON)
+const REPO_BASE_URL = 'https://raw.githubusercontent.com/asstrallity-ui/Tanks_Blitz_Mods_Files/main/';
+
+// НОВАЯ ССЫЛКА НА ВАШ MODS.JSON НА REG.RU
+const REPO_JSON_URL = 'https://rh-archive.ru/mods_files_github/mods.json';
 
 const contentArea = document.getElementById('content-area');
 const navItems = document.querySelectorAll('.nav-item');
@@ -32,19 +29,13 @@ const progressPercent = document.getElementById('progress-percent');
 let currentInstallMethod = 'auto'; 
 let isAppEnvironment = false;
 
-// ГЛАВНАЯ ФУНКЦИЯ ПРОВЕРКИ
 function checkEnvironment() {
-    // Если объект pywebview существует, значит мы внутри EXE
     if (window.pywebview) {
         isAppEnvironment = true;
-        
-        // Находим все кнопки установки
-        const buttons = document.querySelectorAll('.install-btn');
-        
-        buttons.forEach(btn => {
-            // Разблокируем кнопку
+        // Разблокируем все кнопки
+        document.querySelectorAll('.install-btn').forEach(btn => {
             btn.disabled = false;
-            // МЕНЯЕМ ТЕКСТ НА "УСТАНОВИТЬ"
+            // Меняем текст кнопки на "Установить"
             btn.innerHTML = '<span class="material-symbols-outlined">download</span> Установить';
         });
     }
@@ -155,27 +146,18 @@ function renderInstallMethods() {
     const noSdlsToggle = document.getElementById('toggle-nosdls');
 
     autoToggle.addEventListener('change', () => { 
-        if (autoToggle.checked) { 
-            sdlsToggle.checked = false; 
-            noSdlsToggle.checked = false; 
-            currentInstallMethod = 'auto'; 
-        } else { autoToggle.checked = true; }
+        if (autoToggle.checked) { sdlsToggle.checked = false; noSdlsToggle.checked = false; currentInstallMethod = 'auto'; } 
+        else { autoToggle.checked = true; }
     });
 
     sdlsToggle.addEventListener('change', () => { 
-        if (sdlsToggle.checked) { 
-            autoToggle.checked = false; 
-            noSdlsToggle.checked = false; 
-            currentInstallMethod = 'sdls'; 
-        } else { sdlsToggle.checked = true; }
+        if (sdlsToggle.checked) { autoToggle.checked = false; noSdlsToggle.checked = false; currentInstallMethod = 'sdls'; } 
+        else { sdlsToggle.checked = true; }
     });
 
     noSdlsToggle.addEventListener('change', () => { 
-        if (noSdlsToggle.checked) { 
-            autoToggle.checked = false; 
-            sdlsToggle.checked = false; 
-            currentInstallMethod = 'no_sdls'; 
-        } else { noSdlsToggle.checked = true; }
+        if (noSdlsToggle.checked) { autoToggle.checked = false; sdlsToggle.checked = false; currentInstallMethod = 'no_sdls'; } 
+        else { noSdlsToggle.checked = true; }
     });
 }
 
@@ -183,32 +165,33 @@ async function loadMods() {
     contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div><p>Загрузка списка...</p></div>`;
     try {
         const response = await fetch(REPO_JSON_URL);
-        if (!response.ok) throw new Error('Ошибка сети');
+        if (!response.ok) throw new Error(`Ошибка сети: ${response.status}`);
         const mods = await response.json();
         renderMods(mods);
     } catch (error) {
-        contentArea.innerHTML = `<p style="color:#ff5252; text-align:center;">Не удалось загрузить список модов.<br>${error.message}</p>`;
+        console.error(error);
+        contentArea.innerHTML = `<p style="color:#ff5252; text-align:center;">Не удалось загрузить список модов.<br>${error.message}<br>Проверьте CORS на сервере.</p>`;
     }
 }
 
 function renderMods(mods) {
     contentArea.innerHTML = '';
     mods.forEach(mod => {
-        // Обработка пути к файлу
         let rawUrl = mod.file || mod.file_url || mod.url || "";
         let fullUrl = rawUrl;
+        
+        // Если ссылка относительная (не начинается с http), используем GitHub как базу
         if (rawUrl && !rawUrl.startsWith('http')) { fullUrl = REPO_BASE_URL + rawUrl; }
         
         const imageUrl = mod.image || "https://via.placeholder.com/400x220/111/fff?text=No+Image";
         const card = document.createElement('div');
         card.className = 'mod-card';
         
-        // По умолчанию (для веба) кнопка отключена и пишет "Доступно в приложении"
-        // Функция checkEnvironment потом это исправит, если мы в EXE
+        // Изначальное состояние кнопки (для браузера)
         let btnText = 'Доступно в приложении';
         let disabledAttr = 'disabled';
 
-        // Если вдруг JS определил среду мгновенно (редко, но бывает)
+        // Если среда уже определена как EXE (повторная перерисовка)
         if (isAppEnvironment) {
             btnText = 'Установить';
             disabledAttr = '';
@@ -227,12 +210,13 @@ function renderMods(mods) {
         contentArea.appendChild(card);
     });
     
-    // Вызываем проверку еще раз сразу после рендера, на случай если API уже готов
+    // Запускаем проверку среды еще раз сразу после рендера
     checkEnvironment();
 }
 
 function startInstallProcess(id, name, url) {
     if (!window.pywebview) {
+        // Если вдруг кнопка была активна в браузере
         installView.classList.add('view-hidden');
         successView.classList.add('view-hidden');
         errorView.classList.remove('view-hidden');
