@@ -23,7 +23,8 @@ const modalStatus = document.getElementById('modal-status');
 const progressBar = document.getElementById('progress-bar');
 const progressPercent = document.getElementById('progress-percent');
 
-let currentInstallMethod = 'sdls'; 
+// По умолчанию теперь АВТОМАТИЧЕСКИЙ
+let currentInstallMethod = 'auto'; 
 let isAppEnvironment = false;
 
 function checkEnvironment() {
@@ -72,16 +73,31 @@ function handleTabChange(tab) {
 function renderInstallMethods() {
     contentArea.innerHTML = `
         <div class="settings-container">
+            <!-- АВТОМАТИЧЕСКИЙ МЕТОД -->
+            <div class="setting-card" style="border-color: var(--md-sys-color-primary);">
+                <div class="setting-info">
+                    <h3 style="color: var(--md-sys-color-primary);">Автоматически (Рекомендуется)</h3>
+                    <p>Сам найдет папку packs с кэшем игры.</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-auto" ${currentInstallMethod === 'auto' ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- sDLS МЕТОД -->
             <div class="setting-card">
                 <div class="setting-info">
-                    <h3>sDLS Метод (Рекомендуется)</h3>
-                    <p>Установка модов в папку Documents/packs.</p>
+                    <h3>sDLS Метод (Ручной)</h3>
+                    <p>Принудительно в Documents/packs.</p>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="toggle-sdls" ${currentInstallMethod === 'sdls' ? 'checked' : ''}>
                     <span class="slider"></span>
                 </label>
             </div>
+
+            <!-- NO-SDLS МЕТОД -->
             <div class="setting-card">
                 <div class="setting-info">
                     <h3>Стандартный метод (No-SDLS)</h3>
@@ -94,15 +110,41 @@ function renderInstallMethods() {
             </div>
         </div>
     `;
+
+    const autoToggle = document.getElementById('toggle-auto');
     const sdlsToggle = document.getElementById('toggle-sdls');
     const noSdlsToggle = document.getElementById('toggle-nosdls');
-    sdlsToggle.addEventListener('change', () => { 
-        if (sdlsToggle.checked) { noSdlsToggle.checked = false; currentInstallMethod = 'sdls'; } 
-        else { noSdlsToggle.checked = true; currentInstallMethod = 'no_sdls'; } 
+
+    // Логика переключения (радио-кнопки behavior)
+    autoToggle.addEventListener('change', () => { 
+        if (autoToggle.checked) { 
+            sdlsToggle.checked = false; 
+            noSdlsToggle.checked = false; 
+            currentInstallMethod = 'auto'; 
+        } else {
+            // Не даем выключить все, если кликнули по активному
+            autoToggle.checked = true; 
+        }
     });
+
+    sdlsToggle.addEventListener('change', () => { 
+        if (sdlsToggle.checked) { 
+            autoToggle.checked = false; 
+            noSdlsToggle.checked = false; 
+            currentInstallMethod = 'sdls'; 
+        } else {
+             sdlsToggle.checked = true;
+        }
+    });
+
     noSdlsToggle.addEventListener('change', () => { 
-        if (noSdlsToggle.checked) { sdlsToggle.checked = false; currentInstallMethod = 'no_sdls'; } 
-        else { sdlsToggle.checked = true; currentInstallMethod = 'sdls'; } 
+        if (noSdlsToggle.checked) { 
+            autoToggle.checked = false; 
+            sdlsToggle.checked = false; 
+            currentInstallMethod = 'no_sdls'; 
+        } else {
+            noSdlsToggle.checked = true;
+        }
     });
 }
 
@@ -127,6 +169,9 @@ function renderMods(mods) {
         const imageUrl = mod.image || "https://via.placeholder.com/400x220/111/fff?text=No+Image";
         const card = document.createElement('div');
         card.className = 'mod-card';
+        
+        const disabledAttr = isAppEnvironment ? '' : 'disabled';
+        const btnText = isAppEnvironment ? 'Установить' : 'Доступно в приложении';
         
         card.innerHTML = `
             <img src="${imageUrl}" class="card-image" alt="${mod.name}">
@@ -162,7 +207,6 @@ function startInstallProcess(id, name, url) {
     progressBar.style.width = "0%";
     progressPercent.innerText = "0%";
     
-    // ИЗМЕНЕНО ЗДЕСЬ: Просто название мода, без "Установка:"
     modalTitle.innerText = name;
     
     modalStatus.innerText = "Подключение...";
