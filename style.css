@@ -88,6 +88,7 @@ body {
 #content-area.fade-out { opacity: 0; transform: translateY(10px); }
 .content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; align-content: start; }
 
+/* --- КАРТОЧКИ (Общий стиль) --- */
 .mod-card, .setting-card, .big-panel {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
@@ -104,6 +105,7 @@ body {
     box-shadow: var(--glass-hover-shadow);
 }
 
+/* Специфика модов */
 .mod-card { display: flex; flex-direction: column; height: 100%; }
 .card-image { width: 100%; height: 160px; object-fit: cover; background-color: #2a2a2a; border-bottom: 1px solid rgba(255,255,255,0.05); }
 .card-content { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; }
@@ -115,6 +117,7 @@ body {
 .install-btn:hover { opacity: 0.9; box-shadow: 0 4px 12px rgba(208, 188, 255, 0.3); }
 .install-btn:active { transform: scale(0.98); }
 
+/* Специфика настроек */
 .settings-container { display: flex; flex-direction: column; gap: 16px; max-width: 800px; margin: 0 auto; width: 100%; }
 .setting-card { padding: 24px; display: flex; align-items: center; justify-content: space-between; }
 .setting-info h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--md-sys-color-on-surface); }
@@ -126,11 +129,30 @@ body {
 input:checked + .slider { background-color: var(--md-sys-color-primary); border-color: var(--md-sys-color-primary); }
 input:checked + .slider:before { transform: translateX(20px); background-color: var(--md-sys-color-on-primary); width: 24px; height: 24px; bottom: 2px; left: 2px; }
 
-/* --- АВТОРЫ И О ПРОГРАММЕ (UPDATED) --- */
-.about-page-container { max-width: 1000px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; gap: 24px; }
-.big-panel { padding: 32px; display: flex; flex-direction: column; }
-.authors-panel { flex-shrink: 0; }
-.app-info-panel { flex-grow: 1; margin-bottom: 0; } /* Растягиваем на всё оставшееся место */
+/* --- АВТОРЫ И О ПРОГРАММЕ (FULL FILL) --- */
+.about-page-container {
+    /* Растягиваем контейнер на всю доступную ширину и высоту */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px; 
+}
+
+.big-panel {
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+}
+
+.authors-panel {
+    flex-shrink: 0; /* Не сжимаем верхнюю панель */
+}
+
+.app-info-panel {
+    flex-grow: 1; /* Растягиваем нижнюю панель на всё свободное место до самого низа */
+    margin-bottom: 0;
+}
 
 .panel-title { font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--md-sys-color-outline); margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 .authors-list { display: flex; flex-direction: column; gap: 24px; }
@@ -147,8 +169,9 @@ input:checked + .slider:before { transform: translateX(20px); background-color: 
 .app-details { display: flex; flex-direction: column; gap: 16px; height: 100%; }
 .app-version-badge { background: rgba(76, 175, 80, 0.2); color: #4caf50; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; border: 1px solid rgba(76, 175, 80, 0.3); align-self: flex-start; }
 .app-desc { font-size: 15px; line-height: 1.6; color: #ccc; }
-.app-credits { font-size: 13px; color: #666; margin-top: auto; /* Прижимаем копирайт к низу */ }
+.app-credits { font-size: 13px; color: #666; margin-top: auto; }
 
+/* --- МОДАЛЬНОЕ ОКНО --- */
 .modal-overlay { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
     background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); 
