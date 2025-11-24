@@ -116,7 +116,7 @@ function handleTabChange(tab) {
                             <p class="app-desc">
                                 Автоматический установщик модов для Tanks Blitz. Поддерживает Steam DLC System (sDLS) и безопасную установку без поломки клиента игры.
                             </p>
-                            <p class="app-credits">Powered by Python, PyWebView & Pure Hate.</p>
+                            <p class="app-credits">(C) ASSTRALLITY 2025</p>
                         </div>
                     </div>
 
@@ -278,3 +278,4 @@ window.finishInstall = function(success, message) {
 function closeModal() {
     modal.classList.add('hidden');
 }
+
