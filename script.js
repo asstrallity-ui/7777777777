@@ -20,10 +20,9 @@ window.addEventListener('pywebviewready', function() {
     checkEnvironment();
 });
 
-// БАЗОВЫЕ ССЫЛКИ
 const REPO_BASE_URL = 'https://rh-archive.ru/mods_files_github/';
 const REPO_JSON_URL = 'https://rh-archive.ru/mods_files_github/mods.json';
-const REPO_AUTHORS_URL = 'https://rh-archive.ru/mods_files_github/authors.json'; // Твой новый файл
+const REPO_AUTHORS_URL = 'https://rh-archive.ru/mods_files_github/authors.json';
 
 const contentArea = document.getElementById('content-area');
 const navItems = document.querySelectorAll('.nav-item');
@@ -77,13 +76,12 @@ function handleTabChange(tab) {
             renderInstallMethods();
         } else if (tab === 'authors') {
             title.innerText = 'Информация';
-            loadAuthors(); // Теперь грузим авторов из JSON
+            loadAuthors();
         }
         requestAnimationFrame(() => { contentArea.classList.remove('fade-out'); });
     }, 250); 
 }
 
-// --- ЛОГИКА ЗАГРУЗКИ АВТОРОВ ---
 async function loadAuthors() {
     contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div></div>`;
     
@@ -95,13 +93,9 @@ async function loadAuthors() {
         let authorsListHtml = '';
         
         authors.forEach((author, index) => {
-            // Обработка ссылки на аватар
             let avatarUrl = author.avatar || "";
             if (avatarUrl && !avatarUrl.startsWith('http')) { avatarUrl = REPO_BASE_URL + avatarUrl; }
-            
-            // Первая буква для заглушки
             const firstLetter = author.name ? author.name.charAt(0).toUpperCase() : "?";
-            // Случайный цвет для заглушки (просто для красоты)
             const colors = ['#ffb74d', '#d0bcff', '#4caf50', '#64b5f6'];
             const bgColor = colors[index % colors.length];
 
@@ -118,23 +112,19 @@ async function loadAuthors() {
                     </div>
                 </div>
             `;
-            
-            // Добавляем разделитель, если это не последний автор
-            if (index < authors.length - 1) {
-                authorsListHtml += `<div class="divider"></div>`;
-            }
+            if (index < authors.length - 1) { authorsListHtml += `<div class="divider"></div>`; }
         });
 
         contentArea.innerHTML = `
             <div class="about-page-container">
-                <div class="big-panel">
+                <div class="big-panel authors-panel">
                     <h2 class="panel-title">Команда проекта</h2>
                     <div class="authors-list">
                         ${authorsListHtml}
                     </div>
                 </div>
 
-                <div class="big-panel">
+                <div class="big-panel app-info-panel">
                     <h2 class="panel-title">О приложении</h2>
                     <div class="app-details">
                         <span class="app-version-badge">LOADER ASTR v1.0.0 Beta</span>
