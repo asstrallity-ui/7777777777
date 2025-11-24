@@ -23,7 +23,8 @@
     <div class="app-container">
         <aside class="sidebar glass">
             <div class="logo-area">
-                <span class="material-symbols-outlined logo-icon">rocket_launch</span>
+                <!-- ЗАМЕНА ИКОНКИ ЗДЕСЬ -->
+                <img src="icon.ico" alt="Logo" class="logo-icon-img">
                 <h1>LOADER ASTR</h1>
             </div>
             <nav class="nav-menu">
@@ -55,21 +56,16 @@
         </main>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО (ОБНОВЛЕННОЕ) -->
+    <!-- МОДАЛЬНОЕ ОКНО -->
     <div id="progress-modal" class="modal-overlay hidden">
         <div class="modal-content"> 
             <div id="install-view">
-                <!-- Заголовок будет меняться динамически -->
-                <h3 id="modal-title">Установка: Название мода</h3>
-                
-                <!-- Прогресс бар -->
+                <h3 id="modal-title">Установка...</h3>
                 <div class="progress-container">
                     <div id="progress-bar" class="progress-bar"></div>
                 </div>
-                
-                <!-- Нижняя строка: Статус слева, Проценты справа -->
                 <div class="progress-info-row">
-                    <p id="modal-status">Скачивание: 0% (0 MB/s)</p>
+                    <p id="modal-status">Скачивание: 0 MB/s</p>
                     <span id="progress-percent">0%</span>
                 </div>
             </div>
