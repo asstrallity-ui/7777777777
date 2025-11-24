@@ -4,28 +4,25 @@ document.addEventListener('DOMContentLoaded', () => {
         splash.classList.add('fade-out'); 
     }, 2600); 
     
-    // Запускаем загрузку
     loadMods(); 
     
-    // Запускаем "долбежку" проверки среды (на случай медленного старта Python)
-    // Проверяем каждые 100мс в течение 5 секунд
     let attempts = 0;
     const interval = setInterval(() => {
         attempts++;
         if (window.pywebview || attempts > 50) {
             checkEnvironment();
-            if (window.pywebview) clearInterval(interval); // Если нашли - перестаем долбить
+            if (window.pywebview) clearInterval(interval); 
         }
     }, 100);
 });
 
-// Слушатель спец. события от PyWebView (самый надежный метод)
 window.addEventListener('pywebviewready', function() {
     checkEnvironment();
 });
 
-// ССЫЛКИ
-const REPO_BASE_URL = 'https://raw.githubusercontent.com/asstrallity-ui/Tanks_Blitz_Mods_Files/main/';
+// БАЗОВЫЙ URL БОЛЬШЕ НЕ НУЖЕН, ЕСЛИ В JSON ПОЛНЫЕ ССЫЛКИ
+// Но оставим как fallback
+const REPO_BASE_URL = 'https://rh-archive.ru/mods_files_github/';
 const REPO_JSON_URL = 'https://rh-archive.ru/mods_files_github/mods.json';
 
 const contentArea = document.getElementById('content-area');
@@ -43,16 +40,12 @@ const progressPercent = document.getElementById('progress-percent');
 let currentInstallMethod = 'auto'; 
 let isAppEnvironment = false;
 
-// ФУНКЦИЯ ВКЛЮЧЕНИЯ КНОПОК
 function checkEnvironment() {
     if (window.pywebview) {
         isAppEnvironment = true;
-        console.log("Environment detected: APP MODE");
-        
         const buttons = document.querySelectorAll('.install-btn');
         buttons.forEach(btn => {
             btn.disabled = false;
-            // Принудительно обновляем текст, если он еще старый
             if (btn.innerText.includes("Доступно")) {
                 btn.innerHTML = '<span class="material-symbols-outlined">download</span> Установить';
             }
@@ -180,28 +173,38 @@ async function loadMods() {
 function renderMods(mods) {
     contentArea.innerHTML = '';
     
-    // Еще раз проверяем среду перед рендером, вдруг Python уже готов
     if (window.pywebview) isAppEnvironment = true;
 
     mods.forEach(mod => {
-        let rawUrl = mod.file || mod.file_url || mod.url || "";
-        let fullUrl = rawUrl;
-        if (rawUrl && !rawUrl.startsWith('http')) { fullUrl = REPO_BASE_URL + rawUrl; }
+        // Логика URL: если в JSON полная ссылка - берем её, если нет - клеим к базе
+        let fileUrl = mod.file;
+        if (fileUrl && !fileUrl.startsWith('http')) { 
+            fileUrl = REPO_BASE_URL + fileUrl; 
+        }
         
-        const imageUrl = mod.image || "https://via.placeholder.com/400x220/111/fff?text=No+Image";
+        let imageUrl = mod.image;
+        if (imageUrl && !imageUrl.startsWith('http')) {
+            imageUrl = REPO_BASE_URL + imageUrl;
+        }
+        // Заглушка, если картинки нет
+        if (!imageUrl) imageUrl = "https://via.placeholder.com/400x220/111/fff?text=No+Image";
+
         const card = document.createElement('div');
         card.className = 'mod-card';
         
-        // Если среда уже определена как приложение - ставим кнопку активной СРАЗУ
         const btnText = isAppEnvironment ? 'Установить' : 'Доступно в приложении';
         const disabledAttr = isAppEnvironment ? '' : 'disabled';
         
+        // Добавил отображение автора, если оно есть в JSON
+        const authorHtml = mod.author ? `<p style="font-size:12px; color:#938f99; margin-bottom:4px;">Автор: <span style="color:var(--md-sys-color-primary);">${mod.author}</span></p>` : '';
+
         card.innerHTML = `
             <img src="${imageUrl}" class="card-image" alt="${mod.name}">
             <div class="card-content">
                 <h3 class="card-title">${mod.name || "Без названия"}</h3>
+                ${authorHtml}
                 <p class="card-desc">${mod.description || ""}</p>
-                <button class="install-btn" ${disabledAttr} onclick="startInstallProcess('${mod.id}', '${mod.name}', '${fullUrl}')">
+                <button class="install-btn" ${disabledAttr} onclick="startInstallProcess('${mod.id}', '${mod.name}', '${fileUrl}')">
                     <span class="material-symbols-outlined">download</span> ${btnText}
                 </button>
             </div>
@@ -209,13 +212,11 @@ function renderMods(mods) {
         contentArea.appendChild(card);
     });
     
-    // И еще раз вызываем проверку после рендера, чтобы обновить кнопки, если Python проснулся во время рендера
     checkEnvironment();
 }
 
 function startInstallProcess(id, name, url) {
     if (!window.pywebview) {
-        // Если вдруг нажали в браузере
         installView.classList.add('view-hidden');
         successView.classList.add('view-hidden');
         errorView.classList.remove('view-hidden');
@@ -225,7 +226,10 @@ function startInstallProcess(id, name, url) {
         return;
     }
 
-    if (!url || url === "undefined") return;
+    if (!url || url === "undefined") {
+        alert("Ошибка: Ссылка на файл не найдена!");
+        return;
+    }
     
     installView.classList.remove('view-hidden');
     successView.classList.add('view-hidden');
