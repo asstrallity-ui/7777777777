@@ -23,7 +23,6 @@ const modalStatus = document.getElementById('modal-status');
 const progressBar = document.getElementById('progress-bar');
 const progressPercent = document.getElementById('progress-percent');
 
-// По умолчанию теперь АВТОМАТИЧЕСКИЙ
 let currentInstallMethod = 'auto'; 
 let isAppEnvironment = false;
 
@@ -59,10 +58,36 @@ function handleTabChange(tab) {
         } else if (tab === 'authors') {
             title.innerText = 'Авторы';
             contentArea.innerHTML = `
-                <div class="empty-state">
-                    <span class="material-symbols-outlined empty-icon">engineering</span>
-                    <h3>Временно недоступна</h3>
-                    <p>Раздел находится в разработке</p>
+                <div class="authors-container">
+                    <!-- REFUZO -->
+                    <div class="author-card">
+                        <div class="author-header">
+                            <div class="author-avatar" style="background-color: #ffb74d;">R</div>
+                            <div class="author-info">
+                                <h3>Refuzo</h3>
+                                <span class="author-role">Lead Modder / Founder</span>
+                            </div>
+                        </div>
+                        <p class="author-bio">
+                            Основной мододел танкового дерьма. Живёт и спит в этой параше более 6 лет.
+                            Знает о структуре файлов игры больше, чем сами разработчики.
+                        </p>
+                    </div>
+
+                    <!-- ASSTRALLITY -->
+                    <div class="author-card">
+                        <div class="author-header">
+                            <div class="author-avatar" style="background-color: #d0bcff;">A</div>
+                            <div class="author-info">
+                                <h3>ASSTRALLITY</h3>
+                                <span class="author-role">Developer / UI/UX</span>
+                            </div>
+                        </div>
+                        <p class="author-bio">
+                            Левая или правая рука и половина извилин в ебанутой черепушке. 
+                            Тоже чёт может :3. Отвечает за то, чтобы эта программа выглядела не как говно.
+                        </p>
+                    </div>
                 </div>
             `;
         }
@@ -73,7 +98,6 @@ function handleTabChange(tab) {
 function renderInstallMethods() {
     contentArea.innerHTML = `
         <div class="settings-container">
-            <!-- АВТОМАТИЧЕСКИЙ МЕТОД -->
             <div class="setting-card" style="border-color: var(--md-sys-color-primary);">
                 <div class="setting-info">
                     <h3 style="color: var(--md-sys-color-primary);">Автоматически (Рекомендуется)</h3>
@@ -85,7 +109,6 @@ function renderInstallMethods() {
                 </label>
             </div>
 
-            <!-- sDLS МЕТОД -->
             <div class="setting-card">
                 <div class="setting-info">
                     <h3>sDLS Метод (Ручной)</h3>
@@ -97,7 +120,6 @@ function renderInstallMethods() {
                 </label>
             </div>
 
-            <!-- NO-SDLS МЕТОД -->
             <div class="setting-card">
                 <div class="setting-info">
                     <h3>Стандартный метод (No-SDLS)</h3>
@@ -115,36 +137,19 @@ function renderInstallMethods() {
     const sdlsToggle = document.getElementById('toggle-sdls');
     const noSdlsToggle = document.getElementById('toggle-nosdls');
 
-    // Логика переключения (радио-кнопки behavior)
     autoToggle.addEventListener('change', () => { 
-        if (autoToggle.checked) { 
-            sdlsToggle.checked = false; 
-            noSdlsToggle.checked = false; 
-            currentInstallMethod = 'auto'; 
-        } else {
-            // Не даем выключить все, если кликнули по активному
-            autoToggle.checked = true; 
-        }
+        if (autoToggle.checked) { sdlsToggle.checked = false; noSdlsToggle.checked = false; currentInstallMethod = 'auto'; } 
+        else { autoToggle.checked = true; }
     });
 
     sdlsToggle.addEventListener('change', () => { 
-        if (sdlsToggle.checked) { 
-            autoToggle.checked = false; 
-            noSdlsToggle.checked = false; 
-            currentInstallMethod = 'sdls'; 
-        } else {
-             sdlsToggle.checked = true;
-        }
+        if (sdlsToggle.checked) { autoToggle.checked = false; noSdlsToggle.checked = false; currentInstallMethod = 'sdls'; } 
+        else { sdlsToggle.checked = true; }
     });
 
     noSdlsToggle.addEventListener('change', () => { 
-        if (noSdlsToggle.checked) { 
-            autoToggle.checked = false; 
-            sdlsToggle.checked = false; 
-            currentInstallMethod = 'no_sdls'; 
-        } else {
-            noSdlsToggle.checked = true;
-        }
+        if (noSdlsToggle.checked) { autoToggle.checked = false; sdlsToggle.checked = false; currentInstallMethod = 'no_sdls'; } 
+        else { noSdlsToggle.checked = true; }
     });
 }
 
@@ -170,7 +175,6 @@ function renderMods(mods) {
         const card = document.createElement('div');
         card.className = 'mod-card';
         
-        const disabledAttr = isAppEnvironment ? '' : 'disabled';
         const btnText = isAppEnvironment ? 'Установить' : 'Доступно в приложении';
         
         card.innerHTML = `
@@ -179,7 +183,7 @@ function renderMods(mods) {
                 <h3 class="card-title">${mod.name || "Без названия"}</h3>
                 <p class="card-desc">${mod.description || ""}</p>
                 <button class="install-btn" onclick="startInstallProcess('${mod.id}', '${mod.name}', '${fullUrl}')">
-                    <span class="material-symbols-outlined">download</span> Установить
+                    <span class="material-symbols-outlined">download</span> ${btnText}
                 </button>
             </div>
         `;
@@ -208,7 +212,6 @@ function startInstallProcess(id, name, url) {
     progressPercent.innerText = "0%";
     
     modalTitle.innerText = name;
-    
     modalStatus.innerText = "Подключение...";
     modal.classList.remove('hidden');
     
