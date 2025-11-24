@@ -65,36 +65,32 @@ function handleTabChange(tab) {
     setTimeout(() => {
         const title = document.getElementById('page-title');
         contentArea.innerHTML = '';
-        
-        // Сбрасываем классы, чтобы стили grid не мешали странице авторов
-        contentArea.className = ''; 
+        contentArea.className = ''; // Сброс классов
 
         if (tab === 'mods') {
             title.innerText = 'Каталог модификаций';
-            contentArea.classList.add('content-grid'); // Для модов нужен грид
+            contentArea.classList.add('content-grid');
             loadMods();
         } else if (tab === 'install-methods') {
-            title.innerText = 'Методы установки';
+            title.innerText = 'Настройки установки';
             renderInstallMethods();
         } else if (tab === 'authors') {
             title.innerText = 'Информация';
-            // Для авторов класс не нужен, там свой контейнер
             loadAuthors();
         }
         requestAnimationFrame(() => { contentArea.classList.remove('fade-out'); });
     }, 250); 
 }
 
+// --- СТРАНИЦА АВТОРОВ ---
 async function loadAuthors() {
     contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div></div>`;
-    
     try {
         const response = await fetch(REPO_AUTHORS_URL);
         if (!response.ok) throw new Error('Authors file not found');
         const authors = await response.json();
         
         let authorsListHtml = '';
-        
         authors.forEach((author, index) => {
             let avatarUrl = author.avatar || "";
             if (avatarUrl && !avatarUrl.startsWith('http')) { avatarUrl = REPO_BASE_URL + avatarUrl; }
@@ -119,76 +115,140 @@ async function loadAuthors() {
         });
 
         contentArea.innerHTML = `
-            <div class="about-page-container">
-                <div class="big-panel authors-panel">
+            <div class="full-height-container">
+                <div class="big-panel shrink-panel">
                     <h2 class="panel-title">Команда проекта</h2>
-                    <div class="authors-list">
-                        ${authorsListHtml}
-                    </div>
+                    <div class="authors-list">${authorsListHtml}</div>
                 </div>
-
-                <div class="big-panel app-info-panel">
+                <div class="big-panel grow-panel">
                     <h2 class="panel-title">О приложении</h2>
                     <div class="app-details">
                         <span class="app-version-badge">LOADER ASTR v1.0.0 Beta</span>
-                        <p class="app-desc">
-                            Автоматический установщик модов для Tanks Blitz. Поддерживает Steam DLC System (sDLS) и безопасную установку без поломки клиента игры.
-                        </p>
-                        <div style="flex-grow: 1;"></div> <!-- Распорка -->
+                        <p class="app-desc">Автоматический установщик модов для Tanks Blitz. Поддерживает Steam DLC System (sDLS) и безопасную установку без поломки клиента игры.</p>
+                        <div style="flex-grow: 1;"></div>
                         <p class="app-credits">Powered by Python, PyWebView & Pure Hate.</p>
                     </div>
                 </div>
             </div>
         `;
-
     } catch (error) {
         contentArea.innerHTML = `<p style="color:#ff5252; text-align:center;">Ошибка загрузки списка авторов.<br>${error.message}</p>`;
     }
 }
 
+// --- СТРАНИЦА МЕТОДОВ (ОБНОВЛЕНА) ---
 function renderInstallMethods() {
     contentArea.innerHTML = `
-        <div class="settings-container">
-            <div class="setting-card" style="border-color: var(--md-sys-color-primary);">
-                <div class="setting-info">
-                    <h3 style="color: var(--md-sys-color-primary);">Автоматически (Рекомендуется)</h3>
-                    <p>Сам найдет папку packs с кэшем игры.</p>
+        <div class="full-height-container">
+            
+            <!-- БЛОК ПЕРЕКЛЮЧАТЕЛЕЙ -->
+            <div class="methods-grid">
+                
+                <!-- AUTO -->
+                <div class="method-card-new ${currentInstallMethod === 'auto' ? 'active-method' : ''}" id="card-auto">
+                    <div class="method-icon"><span class="material-symbols-outlined">smart_toy</span></div>
+                    <div class="method-content">
+                        <h3>Автоматически</h3>
+                        <p>Сам найдет папку packs</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-auto" ${currentInstallMethod === 'auto' ? 'checked' : ''}>
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <label class="switch">
-                    <input type="checkbox" id="toggle-auto" ${currentInstallMethod === 'auto' ? 'checked' : ''}>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="setting-card">
-                <div class="setting-info">
-                    <h3>sDLS Метод (Ручной)</h3>
-                    <p>Принудительно в Documents/packs.</p>
+
+                <!-- sDLS -->
+                <div class="method-card-new ${currentInstallMethod === 'sdls' ? 'active-method' : ''}" id="card-sdls">
+                    <div class="method-icon"><span class="material-symbols-outlined">folder_zip</span></div>
+                    <div class="method-content">
+                        <h3>sDLS Метод</h3>
+                        <p>Ручной режим (Documents)</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-sdls" ${currentInstallMethod === 'sdls' ? 'checked' : ''}>
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <label class="switch">
-                    <input type="checkbox" id="toggle-sdls" ${currentInstallMethod === 'sdls' ? 'checked' : ''}>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="setting-card">
-                <div class="setting-info">
-                    <h3>Стандартный метод (No-SDLS)</h3>
-                    <p>Прямая замена файлов игры.</p>
+
+                <!-- No-SDLS -->
+                <div class="method-card-new ${currentInstallMethod === 'no_sdls' ? 'active-method' : ''}" id="card-nosdls">
+                    <div class="method-icon"><span class="material-symbols-outlined">folder_open</span></div>
+                    <div class="method-content">
+                        <h3>Стандартный (No-SDLS)</h3>
+                        <p>Прямая замена файлов</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-nosdls" ${currentInstallMethod === 'no_sdls' ? 'checked' : ''}>
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <label class="switch">
-                    <input type="checkbox" id="toggle-nosdls" ${currentInstallMethod === 'no_sdls' ? 'checked' : ''}>
-                    <span class="slider"></span>
-                </label>
+
             </div>
+
+            <!-- БЛОК ИНФОРМАЦИИ (РАСТЯНУТ ВНИЗ) -->
+            <div class="big-panel grow-panel">
+                <h2 class="panel-title">Справка по методам</h2>
+                <div class="methods-info-list">
+                    <div class="info-item">
+                        <span class="info-badge badge-auto">Автоматически</span>
+                        <p>Обычно не нужен, но если ты не знаешь что конкретно щас, микропатч или просто обнова, тыкни тумблер, лаунчер поможет.</p>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="info-item">
+                        <span class="info-badge badge-sdls">sDLS Метод</span>
+                        <p>Если ты уже в курсе что у игры есть микропатч, тыкай сюда и устаналивай.</p>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="info-item">
+                        <span class="info-badge badge-nosdls">Стандартный</span>
+                        <p>Тоже самое что и второй, только при условии что это обычная обнова :3</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
     `;
 
     const autoToggle = document.getElementById('toggle-auto');
     const sdlsToggle = document.getElementById('toggle-sdls');
     const noSdlsToggle = document.getElementById('toggle-nosdls');
+    const cardAuto = document.getElementById('card-auto');
+    const cardSdls = document.getElementById('card-sdls');
+    const cardNosdls = document.getElementById('card-nosdls');
 
-    autoToggle.addEventListener('change', () => { if (autoToggle.checked) { sdlsToggle.checked = false; noSdlsToggle.checked = false; currentInstallMethod = 'auto'; } else { autoToggle.checked = true; } });
-    sdlsToggle.addEventListener('change', () => { if (sdlsToggle.checked) { autoToggle.checked = false; noSdlsToggle.checked = false; currentInstallMethod = 'sdls'; } else { sdlsToggle.checked = true; } });
-    noSdlsToggle.addEventListener('change', () => { if (noSdlsToggle.checked) { autoToggle.checked = false; sdlsToggle.checked = false; currentInstallMethod = 'no_sdls'; } else { noSdlsToggle.checked = true; } });
+    function updateVisuals(method) {
+        currentInstallMethod = method;
+        // Сброс классов
+        cardAuto.classList.remove('active-method');
+        cardSdls.classList.remove('active-method');
+        cardNosdls.classList.remove('active-method');
+        
+        // Установка классов
+        if (method === 'auto') cardAuto.classList.add('active-method');
+        if (method === 'sdls') cardSdls.classList.add('active-method');
+        if (method === 'no_sdls') cardNosdls.classList.add('active-method');
+    }
+
+    autoToggle.addEventListener('change', () => { 
+        if (autoToggle.checked) { 
+            sdlsToggle.checked = false; noSdlsToggle.checked = false; 
+            updateVisuals('auto');
+        } else { autoToggle.checked = true; }
+    });
+
+    sdlsToggle.addEventListener('change', () => { 
+        if (sdlsToggle.checked) { 
+            autoToggle.checked = false; noSdlsToggle.checked = false; 
+            updateVisuals('sdls');
+        } else { sdlsToggle.checked = true; }
+    });
+
+    noSdlsToggle.addEventListener('change', () => { 
+        if (noSdlsToggle.checked) { 
+            autoToggle.checked = false; sdlsToggle.checked = false; 
+            updateVisuals('no_sdls');
+        } else { noSdlsToggle.checked = true; }
+    });
 }
 
 async function loadMods() {
@@ -206,23 +266,19 @@ async function loadMods() {
 
 function renderMods(mods) {
     contentArea.innerHTML = '';
-    
     if (window.pywebview) isAppEnvironment = true;
 
     mods.forEach(mod => {
         let fileUrl = mod.file || "";
         if (fileUrl && !fileUrl.startsWith('http')) { fileUrl = REPO_BASE_URL + fileUrl; }
-        
         let imageUrl = mod.image || "";
         if (imageUrl && !imageUrl.startsWith('http')) { imageUrl = REPO_BASE_URL + imageUrl; }
         if (!imageUrl) imageUrl = "https://via.placeholder.com/400x220/111/fff?text=No+Image";
 
         const card = document.createElement('div');
         card.className = 'mod-card';
-        
         const btnText = isAppEnvironment ? 'Установить' : 'Доступно в приложении';
         const disabledAttr = isAppEnvironment ? '' : 'disabled';
-        
         const authorHtml = mod.author ? `<p class="card-author">Автор: <span>${mod.author}</span></p>` : '';
 
         card.innerHTML = `
@@ -238,7 +294,6 @@ function renderMods(mods) {
         `;
         contentArea.appendChild(card);
     });
-    
     checkEnvironment();
 }
 
@@ -252,23 +307,18 @@ function startInstallProcess(id, name, url) {
         setTimeout(closeModal, 3000);
         return;
     }
-
     if (!url || url === "undefined") {
         alert("Ошибка: Ссылка на файл не найдена!");
         return;
     }
-    
     installView.classList.remove('view-hidden');
     successView.classList.add('view-hidden');
     errorView.classList.add('view-hidden');
-    
     progressBar.style.width = "0%";
     progressPercent.innerText = "0%";
-    
     modalTitle.innerText = name;
     modalStatus.innerText = "Подключение...";
     modal.classList.remove('hidden');
-    
     window.pywebview.api.install_mod(id, url, currentInstallMethod);
 }
 
