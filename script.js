@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
         attempts++;
         if (window.pywebview || attempts > 50) {
             checkEnvironment();
-            if (window.pywebview) clearInterval(interval); 
+            if (window.pywebview) clearInterval(interval);
         }
     }, 100);
 });
@@ -20,8 +20,6 @@ window.addEventListener('pywebviewready', function() {
     checkEnvironment();
 });
 
-// БАЗОВЫЙ URL БОЛЬШЕ НЕ НУЖЕН, ЕСЛИ В JSON ПОЛНЫЕ ССЫЛКИ
-// Но оставим как fallback
 const REPO_BASE_URL = 'https://rh-archive.ru/mods_files_github/';
 const REPO_JSON_URL = 'https://rh-archive.ru/mods_files_github/mods.json';
 
@@ -76,35 +74,52 @@ function handleTabChange(tab) {
             title.innerText = 'Методы установки';
             renderInstallMethods();
         } else if (tab === 'authors') {
-            title.innerText = 'Авторы';
+            title.innerText = 'Информация';
+            
+            // НОВАЯ ВЕРСТКА: ДВЕ БОЛЬШИЕ ПАНЕЛИ
             contentArea.innerHTML = `
-                <div class="authors-container">
-                    <div class="author-card">
-                        <div class="author-header">
-                            <div class="author-avatar" style="background-color: #ffb74d;">R</div>
-                            <div class="author-info">
-                                <h3>Refuzo</h3>
-                                <span class="author-role">Lead Modder / Founder</span>
+                <div class="about-page-container">
+                    
+                    <!-- БОЛЬШАЯ ПАНЕЛЬ АВТОРОВ -->
+                    <div class="big-panel">
+                        <h2 class="panel-title">Команда проекта</h2>
+                        <div class="authors-list">
+                            <!-- Refuzo -->
+                            <div class="author-row">
+                                <div class="author-avatar" style="background-color: #ffb74d;">R</div>
+                                <div class="author-details">
+                                    <h3>Refuzo</h3>
+                                    <span class="role">Founder / Lead Modder</span>
+                                    <p>Основной мододел танкового дерьма. Живёт и спит в этой параше более 6 лет. Знает о структуре файлов игры больше, чем сами разработчики.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="divider"></div>
+
+                            <!-- Asstrallity -->
+                            <div class="author-row">
+                                <div class="author-avatar" style="background-color: #d0bcff;">A</div>
+                                <div class="author-details">
+                                    <h3>ASSTRALLITY</h3>
+                                    <span class="role">Developer / UI/UX</span>
+                                    <p>Левая или правая рука и половина извилин в ебанутой черепушке. Тоже чёт может :3. Отвечает за то, чтобы эта программа выглядела не как говно.</p>
+                                </div>
                             </div>
                         </div>
-                        <p class="author-bio">
-                            Основной мододел танкового дерьма. Живёт и спит в этой параше более 6 лет.
-                            Знает о структуре файлов игры больше, чем сами разработчики.
-                        </p>
                     </div>
-                    <div class="author-card">
-                        <div class="author-header">
-                            <div class="author-avatar" style="background-color: #d0bcff;">A</div>
-                            <div class="author-info">
-                                <h3>ASSTRALLITY</h3>
-                                <span class="author-role">Developer / UI/UX</span>
-                            </div>
+
+                    <!-- БОЛЬШАЯ ПАНЕЛЬ О ПРОГРАММЕ -->
+                    <div class="big-panel">
+                        <h2 class="panel-title">О приложении</h2>
+                        <div class="app-details">
+                            <span class="app-version-badge">LOADER ASTR v1.0.0 Beta</span>
+                            <p class="app-desc">
+                                Автоматический установщик модов для Tanks Blitz. Поддерживает Steam DLC System (sDLS) и безопасную установку без поломки клиента игры.
+                            </p>
+                            <p class="app-credits">Powered by Python, PyWebView & Pure Hate.</p>
                         </div>
-                        <p class="author-bio">
-                            Левая или правая рука и половина извилин в ебанутой черепушке. 
-                            Тоже чёт может :3. Отвечает за то, чтобы эта программа выглядела не как говно.
-                        </p>
                     </div>
+
                 </div>
             `;
         }
@@ -176,17 +191,11 @@ function renderMods(mods) {
     if (window.pywebview) isAppEnvironment = true;
 
     mods.forEach(mod => {
-        // Логика URL: если в JSON полная ссылка - берем её, если нет - клеим к базе
-        let fileUrl = mod.file;
-        if (fileUrl && !fileUrl.startsWith('http')) { 
-            fileUrl = REPO_BASE_URL + fileUrl; 
-        }
+        let fileUrl = mod.file || "";
+        if (fileUrl && !fileUrl.startsWith('http')) { fileUrl = REPO_BASE_URL + fileUrl; }
         
-        let imageUrl = mod.image;
-        if (imageUrl && !imageUrl.startsWith('http')) {
-            imageUrl = REPO_BASE_URL + imageUrl;
-        }
-        // Заглушка, если картинки нет
+        let imageUrl = mod.image || "";
+        if (imageUrl && !imageUrl.startsWith('http')) { imageUrl = REPO_BASE_URL + imageUrl; }
         if (!imageUrl) imageUrl = "https://via.placeholder.com/400x220/111/fff?text=No+Image";
 
         const card = document.createElement('div');
@@ -195,8 +204,7 @@ function renderMods(mods) {
         const btnText = isAppEnvironment ? 'Установить' : 'Доступно в приложении';
         const disabledAttr = isAppEnvironment ? '' : 'disabled';
         
-        // Добавил отображение автора, если оно есть в JSON
-        const authorHtml = mod.author ? `<p style="font-size:12px; color:#938f99; margin-bottom:4px;">Автор: <span style="color:var(--md-sys-color-primary);">${mod.author}</span></p>` : '';
+        const authorHtml = mod.author ? `<p class="card-author">Автор: <span>${mod.author}</span></p>` : '';
 
         card.innerHTML = `
             <img src="${imageUrl}" class="card-image" alt="${mod.name}">
