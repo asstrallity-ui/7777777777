@@ -65,17 +65,20 @@ function handleTabChange(tab) {
     setTimeout(() => {
         const title = document.getElementById('page-title');
         contentArea.innerHTML = '';
-        contentArea.className = tab === 'mods' ? 'content-grid' : '';
+        
+        // Сбрасываем классы, чтобы стили grid не мешали странице авторов
+        contentArea.className = ''; 
 
         if (tab === 'mods') {
             title.innerText = 'Каталог модификаций';
-            contentArea.classList.add('content-grid');
+            contentArea.classList.add('content-grid'); // Для модов нужен грид
             loadMods();
         } else if (tab === 'install-methods') {
             title.innerText = 'Методы установки';
             renderInstallMethods();
         } else if (tab === 'authors') {
             title.innerText = 'Информация';
+            // Для авторов класс не нужен, там свой контейнер
             loadAuthors();
         }
         requestAnimationFrame(() => { contentArea.classList.remove('fade-out'); });
@@ -131,6 +134,7 @@ async function loadAuthors() {
                         <p class="app-desc">
                             Автоматический установщик модов для Tanks Blitz. Поддерживает Steam DLC System (sDLS) и безопасную установку без поломки клиента игры.
                         </p>
+                        <div style="flex-grow: 1;"></div> <!-- Распорка -->
                         <p class="app-credits">Powered by Python, PyWebView & Pure Hate.</p>
                     </div>
                 </div>
