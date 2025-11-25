@@ -28,33 +28,181 @@ const infoDesc = document.getElementById('info-modal-desc');
 const infoActionBtn = document.getElementById('info-modal-action');
 const infoCloseBtn = document.getElementById('info-close-btn');
 
+const splash = document.getElementById('splash-screen'); // Ссылка на сплэш
+
 let currentInstallMethod = 'auto'; 
 let globalModsList = []; 
 let globalBuyList = []; 
 let globalInstalledIds = [];
 
 document.addEventListener('DOMContentLoaded', () => {
-    const splash = document.getElementById('splash-screen');
+    // Инициализация цвета
     const savedColor = localStorage.getItem('accentColor');
     if (savedColor) applyAccentColor(savedColor); else applyAccentColor('#d0bcff');
     
-    setTimeout(() => { if(splash) splash.classList.add('fade-out'); }, 2600);
+    // Мы НЕ убираем сплэш здесь. Мы ждем загрузки данных.
     
+    // Запуск логики проверки окружения (Python)
     let attempts = 0;
     const interval = setInterval(() => {
         attempts++;
         if (window.pywebview || attempts > 50) {
             checkEnvironment();
+            
+            // Запускаем основную загрузку. 
+            // Функция loadMods сама уберет сплэш, когда закончит.
             loadMods(); 
+            
             if (window.pywebview) clearInterval(interval);
         }
     }, 100);
     
+    // Пинг запускаем параллельно
     checkPing(); 
     setInterval(checkPing, 5000);
 });
 
 window.addEventListener('pywebviewready', checkEnvironment);
+
+// --- ГЛАВНАЯ ФУНКЦИЯ ЗАГРУЗКИ ---
+async function loadMods() {
+    // Если контент пуст, покажем спиннер (хотя он под сплэшем, но на всякий случай)
+    // contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div></div>`;
+    
+    try {
+        // 1. Параллельная загрузка всех данных
+        const [modsResp, buyResp] = await Promise.all([
+            fetch(REPO_JSON_URL).catch(e => null),
+            fetch(REPO_BUY_URL).catch(() => ({ json: () => [] })) // Если нет файла, пустой массив
+        ]);
+
+        if (!modsResp || !modsResp.ok) throw new Error("Не удалось загрузить каталог модов");
+
+        globalModsList = await modsResp.json(); 
+        globalBuyList = await buyResp.json();
+
+        // 2. Проверка установленных модов (через Python)
+        globalInstalledIds = [];
+        if (window.pywebview) {
+            try { 
+                globalInstalledIds = await window.pywebview.api.check_installed_mods(globalModsList); 
+            } catch (e) { console.error("Ошибка проверки установки:", e); }
+        }
+
+        // 3. Отрисовка интерфейса (карточек)
+        renderMods(globalModsList, globalInstalledIds, globalBuyList);
+
+    } catch (e) { 
+        contentArea.innerHTML = `
+            <div class="empty-state">
+                <span class="material-symbols-outlined empty-icon">wifi_off</span>
+                <p>Ошибка загрузки: ${e.message}</p>
+                <button class="install-btn" onclick="location.reload()" style="margin-top:20px; width: auto;">Повторить</button>
+            </div>`; 
+    } finally {
+        // 4. СКРЫВАЕМ СПЛЭШ (Только когда всё готово или произошла ошибка)
+        // Добавляем небольшую задержку для плавности
+        setTimeout(() => {
+            if(splash) splash.classList.add('fade-out');
+        }, 500);
+    }
+}
+
+function renderMods(mods, installedIds, buyList) {
+    contentArea.innerHTML = '';
+    
+    if (!mods || mods.length === 0) {
+        contentArea.innerHTML = '<p class="empty-text">Список модов пуст.</p>';
+        return;
+    }
+
+    mods.forEach(mod => {
+        let img = mod.image || ""; if(img && !img.startsWith('http')) img = REPO_BASE_URL + img;
+        if(!img) img = "https://via.placeholder.com/400x220/111/fff?text=No+Image";
+        
+        const isInst = installedIds.includes(mod.id);
+        const buyInfo = buyList.find(b => b.id === mod.id);
+        
+        let btnText = 'Установить';
+        let btnIcon = 'download';
+        let btnClass = 'install-btn';
+        let isDisabled = false;
+        let onClickAction = `startInstallProcess('${mod.id}', '${mod.name}', '${mod.file}')`;
+
+        if (buyInfo) {
+            if (buyInfo.status === 'preorder') {
+                btnText = 'Предзаказ';
+                btnIcon = 'schedule';
+                onClickAction = `openInfoModal('preorder', '${mod.id}')`;
+            } else {
+                btnText = 'Купить';
+                btnIcon = 'shopping_cart';
+                onClickAction = `openInfoModal('paid', '${mod.id}')`;
+            }
+        } else {
+            if (!window.pywebview) {
+                btnText = 'Доступно в приложении';
+                isDisabled = true;
+            } else if (isInst) {
+                btnText = 'Уже установлен';
+                btnIcon = 'check';
+                btnClass = 'install-btn installed';
+                isDisabled = true;
+            }
+        }
+
+        // Сразу формируем HTML карточки с правильными классами и текстами
+        const card = document.createElement('div');
+        card.className = 'mod-card';
+        card.innerHTML = `
+            <img src="${img}" class="card-image" loading="lazy">
+            <div class="card-content">
+                <h3 class="card-title">${mod.name}</h3>
+                <p class="card-author">Автор: <span>${mod.author || "?"}</span></p>
+                <p class="card-desc">${mod.description || ""}</p>
+                <button class="${btnClass}" ${isDisabled ? 'disabled' : ''} onclick="${onClickAction}">
+                    <span class="material-symbols-outlined">${btnIcon}</span> ${btnText}
+                </button>
+            </div>`;
+        contentArea.appendChild(card);
+    });
+}
+
+// ... (Остальной код без изменений: openInfoModal, install, ping и т.д.) ...
+
+function openInfoModal(type, modId) {
+    const buyItem = globalBuyList.find(b => b.id === modId);
+    const modItem = globalModsList.find(m => m.id === modId);
+    if (!buyItem || !modItem) return;
+
+    infoModal.classList.remove('hidden');
+    infoActionBtn.className = 'modal-action-btn'; 
+
+    let statusTitle = type === 'preorder' ? 'Предзаказ' : 'Платный контент';
+    let btnText = type === 'preorder' ? 'ЗАКАЗАТЬ' : 'КУПИТЬ';
+    let btnIcon = type === 'preorder' ? 'schedule' : 'shopping_cart';
+
+    infoTitle.innerText = statusTitle;
+    
+    infoDesc.innerHTML = `
+        <div class="info-row">
+            <span class="info-label">Мод:</span>
+            <span class="info-value">${modItem.name}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Автор:</span>
+            <span class="info-value author-highlight">${modItem.author}</span>
+        </div>
+        <div class="divider" style="margin: 16px 0;"></div>
+        <p class="info-description">${buyItem.desc || "Описание недоступно."}</p>
+        <div class="info-price-tag">${buyItem.price || "Цена договорная"}</div>
+    `;
+
+    infoActionBtn.innerHTML = `${btnText} <span class="material-symbols-outlined">${btnIcon}</span>`;
+    infoActionBtn.onclick = () => { if (buyItem.link) window.open(buyItem.link, '_blank'); };
+}
+
+if(infoCloseBtn) infoCloseBtn.addEventListener('click', () => infoModal.classList.add('hidden'));
 
 async function checkPing() {
     const pingText = document.getElementById('ping-text');
@@ -131,119 +279,6 @@ function handleTabChange(tab) {
         requestAnimationFrame(() => contentArea.classList.remove('fade-out'));
     }, 250);
 }
-
-async function loadMods() {
-    contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div><p>Загрузка каталога...</p></div>`;
-    try {
-        const [modsResp, buyResp] = await Promise.all([
-            fetch(REPO_JSON_URL),
-            fetch(REPO_BUY_URL).catch(() => ({ json: () => [] }))
-        ]);
-        globalModsList = await modsResp.json(); 
-        globalBuyList = await buyResp.json();
-        globalInstalledIds = [];
-        if (window.pywebview) {
-            try { globalInstalledIds = await window.pywebview.api.check_installed_mods(globalModsList); } catch (e) {}
-        }
-        renderMods(globalModsList, globalInstalledIds, globalBuyList);
-    } catch (e) { contentArea.innerHTML = `<p style="color:#ff5252;">Ошибка: ${e.message}</p>`; }
-}
-
-function renderMods(mods, installedIds, buyList) {
-    contentArea.innerHTML = '';
-    mods.forEach(mod => {
-        let img = mod.image || ""; if(img && !img.startsWith('http')) img = REPO_BASE_URL + img;
-        if(!img) img = "https://via.placeholder.com/400x220/111/fff?text=No+Image";
-        
-        const isInst = installedIds.includes(mod.id);
-        const buyInfo = buyList.find(b => b.id === mod.id);
-        
-        let btnText = 'Установить';
-        let btnIcon = 'download';
-        let btnClass = 'install-btn';
-        let isDisabled = false;
-        let onClickAction = `startInstallProcess('${mod.id}', '${mod.name}', '${mod.file}')`;
-
-        if (buyInfo) {
-            if (buyInfo.status === 'preorder') {
-                btnText = 'Предзаказ';
-                btnIcon = 'schedule';
-                onClickAction = `openInfoModal('preorder', '${mod.id}')`;
-            } else {
-                btnText = 'Купить';
-                btnIcon = 'shopping_cart';
-                onClickAction = `openInfoModal('paid', '${mod.id}')`;
-            }
-        } else {
-            if (!window.pywebview) {
-                btnText = 'Доступно в приложении';
-                isDisabled = true;
-            } else if (isInst) {
-                btnText = 'Уже установлен';
-                btnIcon = 'check';
-                btnClass = 'install-btn installed';
-                isDisabled = true;
-            }
-        }
-
-        const card = document.createElement('div');
-        card.className = 'mod-card';
-        card.innerHTML = `
-            <img src="${img}" class="card-image">
-            <div class="card-content">
-                <h3 class="card-title">${mod.name}</h3>
-                <p class="card-author">Автор: <span>${mod.author || "?"}</span></p>
-                <p class="card-desc">${mod.description || ""}</p>
-                <button class="${btnClass}" ${isDisabled ? 'disabled' : ''} onclick="${onClickAction}">
-                    <span class="material-symbols-outlined">${btnIcon}</span> ${btnText}
-                </button>
-            </div>`;
-        contentArea.appendChild(card);
-    });
-}
-
-// --- ОТКРЫТИЕ МОДАЛКИ ИНФО (ОБНОВЛЕННАЯ СТРУКТУРА) ---
-function openInfoModal(type, modId) {
-    const buyItem = globalBuyList.find(b => b.id === modId);
-    const modItem = globalModsList.find(m => m.id === modId);
-    
-    if (!buyItem || !modItem) return;
-
-    infoModal.classList.remove('hidden');
-    infoActionBtn.className = 'modal-action-btn'; 
-
-    let statusTitle = type === 'preorder' ? 'Предзаказ' : 'Платный контент';
-    let btnText = type === 'preorder' ? 'ЗАКАЗАТЬ' : 'КУПИТЬ';
-    let btnIcon = type === 'preorder' ? 'schedule' : 'shopping_cart';
-
-    infoTitle.innerText = statusTitle;
-    
-    // Новая верстка внутри модалки
-    infoDesc.innerHTML = `
-        <div class="info-row">
-            <span class="info-label">Мод:</span>
-            <span class="info-value">${modItem.name}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Автор:</span>
-            <span class="info-value author-highlight">${modItem.author}</span>
-        </div>
-        
-        <div class="divider" style="margin: 16px 0;"></div>
-        
-        <p class="info-description">${buyItem.desc || "Описание недоступно."}</p>
-        
-        <div class="info-price-tag">${buyItem.price || "Цена договорная"}</div>
-    `;
-
-    infoActionBtn.innerHTML = `${btnText} <span class="material-symbols-outlined">${btnIcon}</span>`;
-    
-    infoActionBtn.onclick = () => {
-        if (buyItem.link) window.open(buyItem.link, '_blank');
-    };
-}
-
-if(infoCloseBtn) infoCloseBtn.addEventListener('click', () => infoModal.classList.add('hidden'));
 
 function renderInstallMethods() {
     contentArea.innerHTML = `
