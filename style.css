@@ -161,21 +161,21 @@ body {
 .method-content h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: #fff; }
 .method-content p { font-size: 13px; color: var(--md-sys-color-outline); }
 
-/* Справка по методам (FIXED BADGES) */
-.methods-info-list { display: flex; flex-direction: column; gap: 20px; margin-top: 8px; }
-.info-item { display: flex; flex-direction: column; gap: 10px; }
-
+/* Справка по методам (NEW) */
+.methods-info-list { display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
+.info-item { display: flex; flex-direction: column; gap: 12px; padding: 4px 0; }
+.info-content { display: flex; align-items: flex-start; gap: 12px; }
+.dash { color: var(--md-sys-color-primary); font-weight: 700; margin-top: -2px; }
 .info-badge {
     display: inline-flex; align-items: center; justify-content: center;
     padding: 6px 12px; border-radius: 6px;
     font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
-    align-self: flex-start; line-height: 1; min-width: 100px; text-align: center;
+    align-self: flex-start; line-height: 1; margin-left: 20px;
 }
-.badge-auto { background: rgba(208, 188, 255, 0.15); color: #d0bcff; border: 1px solid rgba(208, 188, 255, 0.3); }
-.badge-sdls { background: rgba(76, 175, 80, 0.15); color: #81c784; border: 1px solid rgba(76, 175, 80, 0.3); }
-.badge-nosdls { background: rgba(255, 82, 82, 0.15); color: #ff8a80; border: 1px solid rgba(255, 82, 82, 0.3); }
-
-.info-item p { font-size: 13px; line-height: 1.5; color: #c4c7c5; margin: 0; }
+.badge-auto { background: rgba(208, 188, 255, 0.1); color: #d0bcff; border: 1px solid rgba(208, 188, 255, 0.2); }
+.badge-sdls { background: rgba(76, 175, 80, 0.1); color: #81c784; border: 1px solid rgba(76, 175, 80, 0.2); }
+.badge-nosdls { background: rgba(255, 82, 82, 0.1); color: #ff8a80; border: 1px solid rgba(255, 82, 82, 0.2); }
+.info-item p { font-size: 14px; line-height: 1.5; color: #e0e0e0; margin: 0; }
 
 /* Тумблеры */
 .switch { position: relative; display: inline-block; width: 52px; height: 32px; flex-shrink: 0; }
