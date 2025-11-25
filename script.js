@@ -1,39 +1,9 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const splash = document.getElementById('splash-screen');
-    
-    // Загружаем сохраненный цвет
-    const savedColor = localStorage.getItem('accentColor');
-    if (savedColor) {
-        applyAccentColor(savedColor);
-    } else {
-        applyAccentColor('#d0bcff'); // Дефолтный цвет
-    }
-
-    setTimeout(() => { 
-        splash.classList.add('fade-out'); 
-    }, 2600); 
-    
-    loadMods(); 
-    
-    let attempts = 0;
-    const interval = setInterval(() => {
-        attempts++;
-        if (window.pywebview || attempts > 50) {
-            checkEnvironment();
-            if (window.pywebview) clearInterval(interval);
-        }
-    }, 100);
-});
-
-window.addEventListener('pywebviewready', function() {
-    checkEnvironment();
-});
-
 // --- КОНФИГУРАЦИЯ ---
 const REPO_BASE_URL = 'https://rh-archive.ru/mods_files_github/';
 const REPO_JSON_URL = 'https://rh-archive.ru/mods_files_github/mods.json';
 const REPO_AUTHORS_URL = 'https://rh-archive.ru/mods_files_github/authors.json';
 
+// --- ПЕРЕМЕННЫЕ UI ---
 const contentArea = document.getElementById('content-area');
 const navItems = document.querySelectorAll('.nav-item');
 const modal = document.getElementById('progress-modal');
@@ -49,7 +19,42 @@ const progressPercent = document.getElementById('progress-percent');
 let currentInstallMethod = 'auto'; 
 let isAppEnvironment = false;
 
-// --- ФУНКЦИИ СМЕНЫ ЦВЕТА ---
+// --- ИНИЦИАЛИЗАЦИЯ ---
+document.addEventListener('DOMContentLoaded', () => {
+    const splash = document.getElementById('splash-screen');
+    
+    // 1. Загрузка темы
+    const savedColor = localStorage.getItem('accentColor');
+    if (savedColor) {
+        applyAccentColor(savedColor);
+    } else {
+        applyAccentColor('#d0bcff'); // Дефолт
+    }
+
+    // 2. Скрытие сплэша
+    setTimeout(() => { 
+        splash.classList.add('fade-out'); 
+    }, 2600); 
+    
+    // 3. Загрузка контента
+    loadMods(); 
+    
+    // 4. Проверка среды (pywebview)
+    let attempts = 0;
+    const interval = setInterval(() => {
+        attempts++;
+        if (window.pywebview || attempts > 50) {
+            checkEnvironment();
+            if (window.pywebview) clearInterval(interval);
+        }
+    }, 100);
+});
+
+window.addEventListener('pywebviewready', function() {
+    checkEnvironment();
+});
+
+// --- ФУНКЦИИ ТЕМЫ ---
 function hexToRgb(hex) {
     hex = hex.replace('#', '');
     let bigint = parseInt(hex, 16);
@@ -61,18 +66,13 @@ function hexToRgb(hex) {
 
 function applyAccentColor(color) {
     const root = document.documentElement;
+    // Основной цвет
     root.style.setProperty('--md-sys-color-primary', color);
+    // RGB компоненты для прозрачности
     const rgb = hexToRgb(color);
     root.style.setProperty('--md-sys-color-primary-rgb', rgb);
-    // Для контраста текста на кнопках (всегда темный)
+    // Контрастный текст (всегда темный для светлых акцентов)
     root.style.setProperty('--md-sys-color-on-primary', '#1e1e1e'); 
-}
-
-window.resetTheme = function() {
-    const defaultColor = '#d0bcff';
-    applyAccentColor(defaultColor);
-    localStorage.removeItem('accentColor');
-    renderSettings();
 }
 
 function renderSettings() {
@@ -91,7 +91,7 @@ function renderSettings() {
                     
                     <div class="color-info">
                         <h3>Акцентный цвет</h3>
-                        <p>Выберите основной цвет интерфейса</p>
+                        <p>Выберите основной цвет интерфейса. Он применится ко всем элементам.</p>
                     </div>
                 </div>
 
@@ -117,7 +117,14 @@ function renderSettings() {
     }
 }
 
-// --- ЛОГИКА UI ---
+window.resetTheme = function() {
+    const defaultColor = '#d0bcff';
+    applyAccentColor(defaultColor);
+    localStorage.removeItem('accentColor');
+    renderSettings();
+}
+
+// --- ЛОГИКА НАВИГАЦИИ ---
 function checkEnvironment() {
     if (window.pywebview) {
         isAppEnvironment = true;
@@ -164,7 +171,7 @@ function handleTabChange(tab) {
     }, 250); 
 }
 
-// --- АВТОРЫ ---
+// --- ЗАГРУЗКА КОНТЕНТА (АВТОРЫ) ---
 async function loadAuthors() {
     contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div></div>`;
     try {
@@ -178,14 +185,11 @@ async function loadAuthors() {
             if (avatarUrl && !avatarUrl.startsWith('http')) { avatarUrl = REPO_BASE_URL + avatarUrl; }
             const firstLetter = author.name ? author.name.charAt(0).toUpperCase() : "?";
             
-            // Используем цвет темы для заглушек
-            const bgColor = 'var(--md-sys-color-primary)'; 
-
             authorsListHtml += `
                 <div class="author-row">
                     <div class="author-avatar-wrapper">
                         <img src="${avatarUrl}" alt="${author.name}" class="author-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <div class="author-avatar-placeholder" style="background-color: ${bgColor}; opacity: 0.8; display: none; color: #1e1e1e;">${firstLetter}</div>
+                        <div class="author-avatar-placeholder" style="background-color: rgba(var(--md-sys-color-primary-rgb), 0.2); color: var(--md-sys-color-primary); display: none;">${firstLetter}</div>
                     </div>
                     <div class="author-details">
                         <h3>${author.name}</h3>
@@ -217,7 +221,10 @@ async function loadAuthors() {
                                 <li>Поддерживает обычные обновления (Standard Update)</li>
                                 <li>Автоматические бэкапы (Auto-Backup)</li>
                             </ul>
-                            <p class="app-desc-text" style="margin-top: 12px;">Содержит в себе актуальные моды, которые были созданы двумя людьми: <span style="color: #ffb74d; font-weight: 600;">Refuzo</span> + <span style="color: var(--md-sys-color-primary); font-weight: 600;">ASSTRALLITY</span>.</p>
+                            <p class="app-desc-text" style="margin-top: 12px;">
+                                Содержит в себе актуальные моды, которые были созданы двумя людьми: 
+                                <span style="color: #ffb74d; font-weight: 600;">Refuzo</span> + <span style="color: var(--md-sys-color-primary); font-weight: 600;">ASSTRALLITY</span>.
+                            </p>
                         </div>
                         <div style="flex-grow: 1;"></div>
                         <div class="app-footer-row">
@@ -233,27 +240,31 @@ async function loadAuthors() {
     }
 }
 
-// --- МЕТОДЫ УСТАНОВКИ ---
+// --- ЗАГРУЗКА КОНТЕНТА (МЕТОДЫ) ---
 function renderInstallMethods() {
     contentArea.innerHTML = `
         <div class="full-height-container">
             <div class="methods-grid">
+                <!-- AUTO -->
                 <div class="method-card-new ${currentInstallMethod === 'auto' ? 'active-method' : ''}" id="card-auto">
                     <div class="method-icon"><span class="material-symbols-outlined">smart_toy</span></div>
                     <div class="method-content"><h3>Автоматически</h3><p>Сам найдет папку packs</p></div>
                     <label class="switch"><input type="checkbox" id="toggle-auto" ${currentInstallMethod === 'auto' ? 'checked' : ''}><span class="slider"></span></label>
                 </div>
+                <!-- sDLS -->
                 <div class="method-card-new ${currentInstallMethod === 'sdls' ? 'active-method' : ''}" id="card-sdls">
                     <div class="method-icon"><span class="material-symbols-outlined">folder_zip</span></div>
                     <div class="method-content"><h3>sDLS Метод</h3><p>Ручной режим (Documents)</p></div>
                     <label class="switch"><input type="checkbox" id="toggle-sdls" ${currentInstallMethod === 'sdls' ? 'checked' : ''}><span class="slider"></span></label>
                 </div>
+                <!-- No-SDLS -->
                 <div class="method-card-new ${currentInstallMethod === 'no_sdls' ? 'active-method' : ''}" id="card-nosdls">
                     <div class="method-icon"><span class="material-symbols-outlined">folder_open</span></div>
                     <div class="method-content"><h3>Стандартный (No-SDLS)</h3><p>Прямая замена файлов</p></div>
                     <label class="switch"><input type="checkbox" id="toggle-nosdls" ${currentInstallMethod === 'no_sdls' ? 'checked' : ''}><span class="slider"></span></label>
                 </div>
             </div>
+
             <div class="big-panel grow-panel">
                 <h2 class="panel-title">Справка по методам</h2>
                 <div class="methods-info-list">
@@ -307,7 +318,6 @@ async function loadMods() {
         const mods = await response.json();
         renderMods(mods);
     } catch (error) {
-        console.error(error);
         contentArea.innerHTML = `<p style="color:#ff5252; text-align:center;">Не удалось загрузить список модов.<br>${error.message}<br>Проверьте CORS на сервере.</p>`;
     }
 }
@@ -345,7 +355,6 @@ function renderMods(mods) {
     checkEnvironment();
 }
 
-// --- УСТАНОВКА ---
 function startInstallProcess(id, name, url) {
     if (!window.pywebview) {
         installView.classList.add('view-hidden');
