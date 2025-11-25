@@ -223,7 +223,7 @@ body {
 .card-author span { color: var(--md-sys-color-primary); font-weight: 600; }
 .card-desc { font-size: 14px; color: var(--md-sys-color-outline); margin-bottom: 16px; flex-grow: 1; line-height: 1.4; }
 
-/* --- КНОПКИ УСТАНОВКИ / КУПИТЬ --- */
+/* --- КНОПКИ УСТАНОВКИ / КАТЕГОРИЙ --- */
 .install-btn { 
     background-color: var(--md-sys-color-primary); 
     color: var(--md-sys-color-on-primary); 
@@ -249,22 +249,19 @@ body {
     border-color: rgba(255, 255, 255, 0.05);
 }
 
-/* Специальные цвета категорий */
-.btn-preorder {
-    background-color: #2196f3;
-    color: white;
-}
-.btn-preorder:hover {
-    background-color: #1976d2;
-    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
-}
+/* МИНИМАЛИСТИЧНЫЕ КНОПКИ ДЛЯ ПРЕДЗАКАЗА / ОПЛАТЫ */
+.btn-preorder,
 .btn-paid {
-    background-color: #ffc107;
-    color: #000;
+    background: rgba(255,255,255,0.04);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid rgba(255,255,255,0.12);
 }
+.btn-preorder:hover,
 .btn-paid:hover {
-    background-color: #ffb300;
-    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    background: rgba(var(--md-sys-color-primary-rgb), 0.08);
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-primary);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
 }
 
 /* --- ПИКЕР ЦВЕТА --- */
@@ -463,53 +460,52 @@ input:checked + .slider:before { transform: translateX(20px); background-color: 
     color: #fff;
 }
 .info-price-tag {
-    align-self: center;
-    background: rgba(255,255,255,0.1);
-    padding: 8px 16px;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--md-sys-color-primary);
-    margin: 8px 0;
-    border: 1px solid rgba(255,255,255,0.1);
+    align-self: flex-start;
+    background: rgba(255,255,255,0.04);
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin: 4px 0 2px;
+    border: 1px solid rgba(255,255,255,0.08);
 }
 .info-sub {
     font-size: 13px;
     color: #999;
     font-style: italic;
 }
+
 .info-modal-btn {
     margin-top: 24px;
     width: 100%;
     padding: 14px;
     border-radius: 16px;
-    border: none;
+    border: 1px solid rgba(255,255,255,0.14);
     cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 500;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
     transition: 0.2s;
+    background: rgba(255,255,255,0.04);
+    color: var(--md-sys-color-on-surface);
 }
-.btn-preorder-modal {
-    background-color: #2196f3;
-    color: white;
-}
-.btn-preorder-modal:hover {
-    background-color: #1976d2;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(33, 150, 243, 0.4);
-}
+
+.btn-preorder-modal,
 .btn-paid-modal {
-    background-color: #ffc107;
-    color: black;
+    /* одинаковый строгий стиль, только текст/контент отличается */
 }
+
+.btn-preorder-modal:hover,
 .btn-paid-modal:hover {
-    background-color: #ffb300;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(255, 193, 7, 0.4);
+    background: rgba(var(--md-sys-color-primary-rgb), 0.10);
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
 }
 
 /* --- ОКНО УСТАНОВКИ --- */
