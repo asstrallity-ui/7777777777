@@ -6,6 +6,7 @@ const REPO_BASE_URL = 'https://rh-archive.ru/mods_files_github/';
 const contentArea = document.getElementById('content-area');
 const navItems = document.querySelectorAll('.nav-item');
 
+// Окна
 const modal = document.getElementById('progress-modal');
 const installView = document.getElementById('install-view');
 const successView = document.getElementById('success-view');
@@ -36,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const splash = document.getElementById('splash-screen');
     const savedColor = localStorage.getItem('accentColor');
     if (savedColor) applyAccentColor(savedColor); else applyAccentColor('#d0bcff');
+    
     setTimeout(() => { if(splash) splash.classList.add('fade-out'); }, 2600);
     
     let attempts = 0;
@@ -48,7 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 100);
     
-    checkPing(); setInterval(checkPing, 5000);
+    checkPing(); 
+    setInterval(checkPing, 5000);
 });
 
 window.addEventListener('pywebviewready', checkEnvironment);
@@ -57,6 +60,7 @@ async function checkPing() {
     const pingText = document.getElementById('ping-text');
     const pingDot = document.getElementById('ping-dot');
     if (!pingText || !pingDot) return;
+    
     const start = Date.now();
     try {
         await fetch(REPO_JSON_URL + '?t=' + start, { method: 'HEAD', cache: 'no-store' });
@@ -156,12 +160,11 @@ function renderMods(mods, installedIds, buyList) {
         
         let btnText = 'Установить';
         let btnIcon = 'download';
-        let btnClass = 'install-btn'; // Стандартный класс для всех кнопок
+        let btnClass = 'install-btn';
         let isDisabled = false;
         let onClickAction = `startInstallProcess('${mod.id}', '${mod.name}', '${mod.file}')`;
 
         if (buyInfo) {
-            // Используем тот же класс install-btn для сохранения стиля
             if (buyInfo.status === 'preorder') {
                 btnText = 'Предзаказ';
                 btnIcon = 'schedule';
@@ -199,23 +202,30 @@ function renderMods(mods, installedIds, buyList) {
     });
 }
 
+// --- ОТКРЫТИЕ МОДАЛКИ ИНФО (СТРОГИЙ СТИЛЬ) ---
 function openInfoModal(type, modId) {
     const item = globalBuyList.find(b => b.id === modId);
     if (!item) return;
 
     infoModal.classList.remove('hidden');
-    
-    // Кнопка в модалке тоже использует стандартный стиль
-    infoActionBtn.className = 'info-modal-btn';
+    infoActionBtn.className = 'modal-action-btn'; // Строгий стиль
 
     if (type === 'preorder') {
-        infoTitle.innerText = 'Ранний доступ';
-        infoDesc.innerHTML = `<p class="info-status-text">Этот мод пока находится в разработке.</p><p>Вы можете оформить предзаказ у автора.</p><div class="info-price-tag">${item.price || "По запросу"}</div><p class="info-sub">${item.desc || ""}</p>`;
-        infoActionBtn.innerHTML = '<span>Написать автору</span> <span class="material-symbols-outlined">telegram</span>';
+        infoTitle.innerText = 'Предзаказ';
+        infoDesc.innerHTML = `
+            <p>Данный мод находится в раннем доступе.</p>
+            <p>${item.desc || "Свяжитесь с автором для получения доступа."}</p>
+            <div class="info-price-tag">${item.price || "По запросу"}</div>
+        `;
+        infoActionBtn.innerHTML = 'ЗАКАЗАТЬ <span class="material-symbols-outlined">telegram</span>';
     } else {
         infoTitle.innerText = 'Платный контент';
-        infoDesc.innerHTML = `<p class="info-status-text">Этот мод является платным.</p><p>Для покупки свяжитесь с автором.</p><div class="info-price-tag">${item.price || "Цена договорная"}</div><p class="info-sub">${item.desc || ""}</p>`;
-        infoActionBtn.innerHTML = '<span>Купить</span> <span class="material-symbols-outlined">telegram</span>';
+        infoDesc.innerHTML = `
+            <p>Этот мод распространяется платно.</p>
+            <p>${item.desc || "Для покупки перейдите в Telegram автора."}</p>
+            <div class="info-price-tag">${item.price || "Цена договорная"}</div>
+        `;
+        infoActionBtn.innerHTML = 'КУПИТЬ <span class="material-symbols-outlined">shopping_cart</span>';
     }
     infoActionBtn.onclick = () => window.open(item.link, '_blank');
 }
