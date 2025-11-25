@@ -2,17 +2,12 @@
     --md-sys-color-background: #101010;
     --md-sys-color-surface: #1e1e1e;
     --md-sys-color-surface-variant: #2c2c2c;
-    
-    /* Основной акцентный цвет (Фиолетовый по умолчанию) */
     --md-sys-color-primary: #d0bcff; 
     --md-sys-color-primary-rgb: 208, 188, 255; 
-    
-    --md-sys-color-on-primary: #381e72; /* Цвет текста на акцентной кнопке */
-    
+    --md-sys-color-on-primary: #381e72;
     --md-sys-color-secondary-container: #4a4458;
     --md-sys-color-on-surface: #e6e1e5;
     --md-sys-color-outline: #938f99;
-    
     --glass-bg: rgba(255, 255, 255, 0.03);
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -34,7 +29,6 @@ body {
         radial-gradient(circle at bottom left, rgba(var(--md-sys-color-primary-rgb), 0.05) 0%, transparent 40%); 
 }
 
-/* --- СПЛЭШ --- */
 #splash-screen {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background-color: var(--md-sys-color-background);
@@ -54,7 +48,6 @@ body {
 .app-container { display: flex; height: 100%; width: 100%; }
 .glass, .sidebar { background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); border: 1px solid var(--glass-border); }
 
-/* --- SIDEBAR --- */
 .sidebar { width: 260px; display: flex; flex-direction: column; padding: 20px; z-index: 10; border-left: none; border-bottom: none; border-top: none; box-shadow: 5px 0 30px rgba(0,0,0,0.2); }
 .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; padding-left: 10px; }
 .logo-icon-img { width: 32px; height: 32px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.2)); }
@@ -65,7 +58,6 @@ body {
 .nav-item.active { background: rgba(var(--md-sys-color-primary-rgb), 0.15); color: var(--md-sys-color-primary); }
 .sidebar-footer { padding-top: 20px; border-top: 1px solid var(--glass-border); text-align: center; font-size: 12px; color: var(--md-sys-color-outline); }
 
-/* --- MAIN / TOP BAR --- */
 .main-content { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
 .top-bar { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); border-bottom: 1px solid var(--glass-border); border-left: none; border-right: none; border-top: none; }
 .top-bar-actions { display: flex; align-items: center; gap: 20px; }
@@ -77,16 +69,13 @@ body {
 .social-btn:hover { background: rgba(var(--md-sys-color-primary-rgb), 0.15); color: var(--md-sys-color-primary); border-color: var(--md-sys-color-primary); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(var(--md-sys-color-primary-rgb), 0.3); animation: none; }
 .divider-vertical { width: 1px; height: 24px; background: rgba(255, 255, 255, 0.1); }
 
-/* Пинг / статус */
 .status-indicator { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--md-sys-color-outline); min-width: 120px; justify-content: flex-end; }
 .status-dot { width: 8px; height: 8px; background-color: #4caf50; border-radius: 50%; box-shadow: 0 0 8px rgba(76, 175, 80, 0.4); transition: background-color 0.3s, box-shadow 0.3s; }
 
-/* --- CONTENT AREA --- */
 #content-area { padding: 32px; overflow-y: auto; height: calc(100vh - 64px); transition: opacity 0.25s ease-out, transform 0.25s ease-out; opacity: 1; transform: translateY(0); }
 #content-area.fade-out { opacity: 0; transform: translateY(10px); }
 .content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; align-content: start; }
 
-/* --- КАРТОЧКИ МОДОВ --- */
 .mod-card, .method-card-new, .big-panel { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 24px; transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; overflow: hidden; position: relative; box-shadow: var(--glass-shadow); }
 .mod-card:hover, .method-card-new:hover, .big-panel:hover { transform: translateY(-4px); border-color: var(--md-sys-color-primary); background: rgba(var(--md-sys-color-primary-rgb), 0.05); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4); }
 .mod-card { display: flex; flex-direction: column; height: 100%; }
@@ -97,34 +86,12 @@ body {
 .card-author span { color: var(--md-sys-color-primary); font-weight: 600; }
 .card-desc { font-size: 14px; color: var(--md-sys-color-outline); margin-bottom: 16px; flex-grow: 1; line-height: 1.4; }
 
-/* --- УНИВЕРСАЛЬНАЯ КНОПКА (INSTALL, BUY, PREORDER) --- */
-/* Делаем все кнопки визуально одинаковыми */
-.install-btn { 
-    background-color: var(--md-sys-color-primary); 
-    color: var(--md-sys-color-on-primary); 
-    border: none; padding: 10px 20px; border-radius: 20px; 
-    font-weight: 500; cursor: pointer; width: 100%; 
-    transition: 0.2s; display: flex; align-items: center; 
-    justify-content: center; gap: 8px; 
-}
+.install-btn { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); border: none; padding: 10px 20px; border-radius: 20px; font-weight: 500; cursor: pointer; width: 100%; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .install-btn:hover { opacity: 0.9; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 .install-btn:active { transform: scale(0.98); }
+.install-btn:disabled, .install-btn.installed { background-color: rgba(255, 255, 255, 0.05); color: var(--md-sys-color-outline); cursor: default; border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: none; opacity: 0.7; }
+.install-btn:disabled:hover, .install-btn.installed:hover { transform: none; box-shadow: none; background-color: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.05); }
 
-.install-btn:disabled, .install-btn.installed {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--md-sys-color-outline);
-    cursor: default;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: none;
-    opacity: 0.7;
-}
-.install-btn:disabled:hover, .install-btn.installed:hover {
-    transform: none; box-shadow: none;
-    background-color: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.05);
-}
-
-/* --- ЦВЕТОВОЙ ПИКЕР И НАСТРОЙКИ --- */
 .color-picker-container { display: flex; align-items: center; gap: 20px; padding: 10px 0; position: relative; }
 .color-preview-wrapper { position: relative; width: 48px; height: 48px; }
 .color-preview-icon { width: 100%; height: 100%; border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); pointer-events: none; }
@@ -134,14 +101,12 @@ body {
 .reset-theme-btn { background: transparent; border: 1px solid var(--md-sys-color-outline); color: var(--md-sys-color-on-surface); padding: 10px 20px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; transition: 0.2s; align-self: flex-start; }
 .reset-theme-btn:hover { border-color: var(--md-sys-color-primary); color: var(--md-sys-color-primary); background: rgba(var(--md-sys-color-primary-rgb), 0.1); }
 
-/* --- ОБЩИЕ ПАНЕЛИ --- */
 .full-height-container, .about-page-container { width: 100%; height: 100%; display: flex; flex-direction: column; gap: 24px; }
 .big-panel { padding: 32px; display: flex; flex-direction: column; }
 .shrink-panel { flex-shrink: 0; }
 .grow-panel { flex-grow: 1; margin-bottom: 0; }
 .panel-title { font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--md-sys-color-outline); margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-/* --- МЕТОДЫ УСТАНОВКИ --- */
 .methods-grid { display: flex; flex-direction: column; gap: 16px; flex-shrink: 0; }
 .method-card-new { padding: 20px 24px; display: flex; align-items: center; gap: 20px; transition: 0.2s ease; border: 1px solid var(--glass-border); }
 .active-method { background: linear-gradient(90deg, rgba(var(--md-sys-color-primary-rgb), 0.15), rgba(255,255,255,0.0)); border-color: var(--md-sys-color-primary); box-shadow: 0 0 20px rgba(0,0,0,0.2); }
@@ -168,7 +133,6 @@ body {
 input:checked + .slider { background-color: var(--md-sys-color-primary); border-color: var(--md-sys-color-primary); }
 input:checked + .slider:before { transform: translateX(20px); background-color: var(--md-sys-color-on-primary); width: 24px; height: 24px; bottom: 2px; left: 2px; }
 
-/* --- АВТОРЫ --- */
 .authors-list { display: flex; flex-direction: column; gap: 20px; }
 .author-row { display: flex; align-items: center; gap: 20px; padding: 10px; border-radius: 16px; transition: background 0.2s; }
 .author-row:hover { background: rgba(255,255,255,0.03); }
@@ -192,72 +156,94 @@ input:checked + .slider:before { transform: translateX(20px); background-color: 
 .app-footer-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px; }
 .app-credits { font-size: 13px; color: #666; }
 
-/* --- FAB РЕМОНТА --- */
 .fab-repair { position: fixed; bottom: 32px; right: 32px; width: 56px; height: 56px; border-radius: 50%; background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); cursor: pointer; z-index: 100; display: flex; align-items: center; justify-content: center; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .fab-repair:hover { transform: scale(1.1) rotate(15deg); box-shadow: 0 8px 25px rgba(var(--md-sys-color-primary-rgb), 0.5); }
 .fab-repair.hidden { display: none; }
 
-/* --- ОБЩИЕ МОДАЛКИ --- */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 1; visibility: visible; transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s; }
 .modal-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-.modal-content { width: 460px; min-height: 180px; background: #161616; border-radius: 24px; padding: 28px 40px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.8); border: 1px solid var(--glass-border); transform: scale(1); transition: transform 0.3s ease-out; display: flex; flex-direction: column; justify-content: center; position: relative; }
-.modal-overlay.hidden .modal-content { transform: scale(0.95); }
-.modal-close-icon { position: absolute; top: 16px; right: 16px; background: transparent; border: none; color: var(--md-sys-color-outline); cursor: pointer; transition: 0.2s; padding: 4px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.modal-close-icon:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
-/* --- МОДАЛКА ВОССТАНОВЛЕНИЯ (и для Инфо тоже) --- */
-.repair-content { width: 520px; text-align: left; align-items: stretch; padding: 40px; }
-.repair-content h3 { font-size: 22px; font-weight: 600; color: #fff; margin-bottom: 6px; }
-.modal-subtitle { font-size: 14px; color: var(--md-sys-color-outline); margin-bottom: 24px; }
-.repair-list { max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
+/* --- ЕДИНЫЙ СТИЛЬ ДЛЯ КОНТЕНТА МОДАЛОК (Repair и Info) --- */
+.modal-content { 
+    width: 480px; 
+    background: #141414; /* Чуть темнее фона */
+    border-radius: 24px; 
+    padding: 32px; 
+    text-align: left; 
+    box-shadow: 0 20px 60px rgba(0,0,0,0.9); 
+    border: 1px solid var(--glass-border);
+    transform: scale(1); 
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1); 
+    display: flex; 
+    flex-direction: column; 
+    position: relative;
+}
+.modal-overlay.hidden .modal-content { transform: scale(0.95); }
+
+.modal-content h3 { 
+    font-size: 20px; font-weight: 600; color: #fff; 
+    margin-bottom: 16px; letter-spacing: 0.5px;
+}
+
+.modal-close-icon {
+    position: absolute; top: 20px; right: 20px; 
+    background: transparent; border: 1px solid transparent;
+    color: var(--md-sys-color-outline); 
+    cursor: pointer; transition: 0.2s; 
+    padding: 6px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+}
+.modal-close-icon:hover { 
+    background: rgba(255,255,255,0.05); 
+    color: #fff; 
+    border-color: rgba(255,255,255,0.1);
+}
+
+/* Стили для Repair (список) */
+.repair-list { max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; margin-top: 10px;}
 .repair-item { background: rgba(255,255,255,0.05); padding: 14px 20px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; transition: 0.2s; }
 .repair-item:hover { border-color: var(--md-sys-color-primary); background: rgba(var(--md-sys-color-primary-rgb), 0.1); }
 .repair-item span { font-size: 15px; color: #fff; font-weight: 500; }
 .repair-action-btn { background: transparent; border: none; color: var(--md-sys-color-outline); cursor: pointer; transition: 0.2s; padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
 .repair-action-btn .material-symbols-outlined { font-size: 22px; }
 .repair-action-btn:hover { color: var(--md-sys-color-primary); background: rgba(255,255,255,0.1); transform: scale(1.1); }
-.empty-text { text-align: center; color: #666; font-size: 13px; padding: 20px; }
+.modal-subtitle { font-size: 14px; color: var(--md-sys-color-outline); margin-bottom: 10px; }
 
-/* --- МОДАЛКА ИНФО (СТРОГИЙ СТИЛЬ) --- */
-.info-body { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
-.info-status-text { font-size: 16px; font-weight: 500; color: #fff; }
-
-/* Минималистичный тег цены */
+/* Стили для Info (описание) */
+.info-body p { font-size: 14px; line-height: 1.6; color: var(--md-sys-color-outline); margin-bottom: 12px; }
 .info-price-tag {
-    align-self: flex-start;
-    background: transparent; /* Без заливки */
-    padding: 6px 12px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--md-sys-color-primary); /* Акцентный текст */
-    margin: 8px 0 4px;
-    border: 1px solid var(--md-sys-color-primary); /* Акцентная рамка */
+    display: inline-block;
+    font-size: 16px; font-weight: 700;
+    color: var(--md-sys-color-primary);
+    padding: 8px 16px;
+    border: 1px solid var(--md-sys-color-primary);
+    border-radius: 12px;
+    margin: 8px 0 24px 0;
+    background: rgba(var(--md-sys-color-primary-rgb), 0.05);
 }
-.info-sub { font-size: 13px; color: #999; font-style: italic; }
 
-/* Кнопка внутри модалки (как Install) */
-.info-modal-btn {
-    margin-top: 24px;
+/* Универсальная кнопка действия в модалке (Купить / Telegram) */
+.modal-action-btn {
     width: 100%;
-    padding: 12px;
-    border-radius: 20px; /* Как install-btn */
+    padding: 14px;
+    border-radius: 16px;
     border: none;
     cursor: pointer;
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     transition: 0.2s;
-    background-color: var(--md-sys-color-primary); /* Акцентный фон */
-    color: var(--md-sys-color-on-primary);       /* Акцентный текст */
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
-.info-modal-btn:hover { opacity: 0.9; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-.info-modal-btn:active { transform: scale(0.98); }
+.modal-action-btn:hover { opacity: 0.9; box-shadow: 0 4px 15px rgba(var(--md-sys-color-primary-rgb), 0.3); transform: translateY(-1px); }
+.modal-action-btn:active { transform: scale(0.98); }
 
-/* --- ОКНО УСТАНОВКИ --- */
 .view-hidden { display: none !important; }
 #install-view h3 { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #ffffff; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .progress-container { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.08); border-radius: 4px; overflow: hidden; margin-bottom: 10px; }
