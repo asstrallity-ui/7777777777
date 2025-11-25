@@ -6,8 +6,7 @@ const REPO_BASE_URL = 'https://rh-archive.ru/mods_files_github/';
 const contentArea = document.getElementById('content-area');
 const navItems = document.querySelectorAll('.nav-item');
 
-// Модальные окна
-const modal = document.getElementById('progress-modal'); 
+const modal = document.getElementById('progress-modal');
 const installView = document.getElementById('install-view');
 const successView = document.getElementById('success-view');
 const errorView = document.getElementById('error-view');
@@ -37,10 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const splash = document.getElementById('splash-screen');
     const savedColor = localStorage.getItem('accentColor');
     if (savedColor) applyAccentColor(savedColor); else applyAccentColor('#d0bcff');
-    
-    setTimeout(() => {
-        if(splash) splash.classList.add('fade-out');
-    }, 2600);
+    setTimeout(() => { if(splash) splash.classList.add('fade-out'); }, 2600);
     
     let attempts = 0;
     const interval = setInterval(() => {
@@ -52,21 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 100);
     
-    // ЗАПУСК ПИНГА ТОЛЬКО ЗДЕСЬ, КОГДА DOM ГОТОВ
-    checkPing(); 
-    setInterval(checkPing, 5000);
+    checkPing(); setInterval(checkPing, 5000);
 });
 
 window.addEventListener('pywebviewready', checkEnvironment);
 
-// --- PING ---
 async function checkPing() {
     const pingText = document.getElementById('ping-text');
     const pingDot = document.getElementById('ping-dot');
-    
-    // Защита: если элементов нет, выходим
     if (!pingText || !pingDot) return;
-
     const start = Date.now();
     try {
         await fetch(REPO_JSON_URL + '?t=' + start, { method: 'HEAD', cache: 'no-store' });
@@ -138,7 +128,6 @@ function handleTabChange(tab) {
     }, 250);
 }
 
-// --- ЗАГРУЗКА ---
 async function loadMods() {
     contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div><p>Загрузка каталога...</p></div>`;
     try {
@@ -146,18 +135,14 @@ async function loadMods() {
             fetch(REPO_JSON_URL),
             fetch(REPO_BUY_URL).catch(() => ({ json: () => [] }))
         ]);
-
         globalModsList = await modsResp.json(); 
         globalBuyList = await buyResp.json();
-
         globalInstalledIds = [];
         if (window.pywebview) {
             try { globalInstalledIds = await window.pywebview.api.check_installed_mods(globalModsList); } catch (e) {}
         }
         renderMods(globalModsList, globalInstalledIds, globalBuyList);
-    } catch (e) { 
-        contentArea.innerHTML = `<p style="color:#ff5252;">Ошибка: ${e.message}</p>`; 
-    }
+    } catch (e) { contentArea.innerHTML = `<p style="color:#ff5252;">Ошибка: ${e.message}</p>`; }
 }
 
 function renderMods(mods, installedIds, buyList) {
@@ -171,20 +156,19 @@ function renderMods(mods, installedIds, buyList) {
         
         let btnText = 'Установить';
         let btnIcon = 'download';
-        let btnClass = 'install-btn';
+        let btnClass = 'install-btn'; // Стандартный класс для всех кнопок
         let isDisabled = false;
         let onClickAction = `startInstallProcess('${mod.id}', '${mod.name}', '${mod.file}')`;
 
         if (buyInfo) {
+            // Используем тот же класс install-btn для сохранения стиля
             if (buyInfo.status === 'preorder') {
                 btnText = 'Предзаказ';
                 btnIcon = 'schedule';
-                btnClass = 'install-btn btn-preorder';
                 onClickAction = `openInfoModal('preorder', '${mod.id}')`;
             } else {
                 btnText = 'Купить';
                 btnIcon = 'shopping_cart';
-                btnClass = 'install-btn btn-paid';
                 onClickAction = `openInfoModal('paid', '${mod.id}')`;
             }
         } else {
@@ -220,18 +204,18 @@ function openInfoModal(type, modId) {
     if (!item) return;
 
     infoModal.classList.remove('hidden');
+    
+    // Кнопка в модалке тоже использует стандартный стиль
     infoActionBtn.className = 'info-modal-btn';
 
     if (type === 'preorder') {
         infoTitle.innerText = 'Ранний доступ';
-        infoDesc.innerHTML = `<p class="info-status-text">Данный мод пока недоступен публично.</p><p>Закажите его у создателя.</p><div class="info-price-tag">${item.price || "По запросу"}</div><p class="info-sub">${item.desc || ""}</p>`;
-        infoActionBtn.innerHTML = '<span>Заказать</span> <span class="material-symbols-outlined">telegram</span>';
-        infoActionBtn.classList.add('btn-preorder-modal');
+        infoDesc.innerHTML = `<p class="info-status-text">Этот мод пока находится в разработке.</p><p>Вы можете оформить предзаказ у автора.</p><div class="info-price-tag">${item.price || "По запросу"}</div><p class="info-sub">${item.desc || ""}</p>`;
+        infoActionBtn.innerHTML = '<span>Написать автору</span> <span class="material-symbols-outlined">telegram</span>';
     } else {
-        infoTitle.innerText = 'Платный мод';
-        infoDesc.innerHTML = `<p class="info-status-text">Этот мод распространяется платно.</p><p>Приобретите его у автора.</p><div class="info-price-tag">${item.price || "Цена договорная"}</div><p class="info-sub">${item.desc || ""}</p>`;
+        infoTitle.innerText = 'Платный контент';
+        infoDesc.innerHTML = `<p class="info-status-text">Этот мод является платным.</p><p>Для покупки свяжитесь с автором.</p><div class="info-price-tag">${item.price || "Цена договорная"}</div><p class="info-sub">${item.desc || ""}</p>`;
         infoActionBtn.innerHTML = '<span>Купить</span> <span class="material-symbols-outlined">telegram</span>';
-        infoActionBtn.classList.add('btn-paid-modal');
     }
     infoActionBtn.onclick = () => window.open(item.link, '_blank');
 }
