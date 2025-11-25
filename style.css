@@ -92,7 +92,6 @@ body {
 .install-btn:disabled, .install-btn.installed { background-color: rgba(255, 255, 255, 0.05); color: var(--md-sys-color-outline); cursor: default; border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: none; opacity: 0.7; }
 .install-btn:disabled:hover, .install-btn.installed:hover { transform: none; box-shadow: none; background-color: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.05); }
 
-/* КАСТОМНЫЙ КОЛОР ПИКЕР */
 .custom-color-picker { display: flex; flex-direction: column; gap: 20px; margin-top: 10px; }
 .picker-header { display: flex; align-items: center; gap: 20px; }
 .current-color-preview { width: 64px; height: 64px; border-radius: 16px; border: 2px solid rgba(255,255,255,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: background-color 0.2s; }
@@ -154,44 +153,20 @@ input:checked + .slider:before { transform: translateX(20px); background-color: 
 .divider { height: 1px; background: rgba(255,255,255,0.05); width: 100%; margin: 0; }
 .app-details { display: flex; flex-direction: column; gap: 16px; height: 100%; }
 .app-header-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-.app-version-badge { background: rgba(var(--md-sys-color-primary-rgb), 0.1); color: var(--md-sys-color-primary); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; border: 1px solid var(--md-sys-color-primary); }
+.app-version-badge { border: 1px solid var(--md-sys-color-primary); background: rgba(var(--md-sys-color-primary-rgb), 0.1); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; }
 .app-description-block { display: flex; flex-direction: column; gap: 8px; }
 .app-desc-text { font-size: 14px; line-height: 1.6; color: #e0e0e0; }
 .app-desc-text strong { color: #fff; font-weight: 600; }
-.app-features-list-small { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.app-features-list-small li { font-size: 13px; color: #938f99; display: flex; align-items: center; gap: 8px; }
-.app-features-list-small li::before { content: "•"; color: var(--md-sys-color-primary); font-weight: bold; }
+.app-features-list-new { list-style: none; margin: 12px 0 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.app-features-list-new li { font-size: 14px; color: var(--md-sys-color-outline); display: flex; align-items: center; gap: 10px; line-height: 1.4; }
+.app-features-list-new li::before { content: ""; display: block; width: 6px; height: 6px; border-radius: 50%; background-color: var(--md-sys-color-primary); flex-shrink: 0; }
+.app-features-list-new li strong { color: #fff; font-weight: 500; }
 .app-footer-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px; }
 .app-credits { font-size: 13px; color: #666; }
 
-/* ОБНОВЛЁННАЯ КНОПКА РЕМОНТА */
-.fab-repair {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    color: var(--md-sys-color-primary);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.75);
-    cursor: pointer;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.fab-repair .material-symbols-outlined {
-    font-size: 22px;
-}
-.fab-repair:hover {
-    transform: translateY(-2px);
-    background: rgba(var(--md-sys-color-primary-rgb), 0.12);
-    border-color: var(--md-sys-color-primary);
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.85);
-}
+.fab-repair { position: fixed; bottom: 24px; right: 24px; width: 44px; height: 44px; border-radius: 50%; background: rgba(0, 0, 0, 0.55); border: 1px solid rgba(255, 255, 255, 0.16); color: var(--md-sys-color-primary); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.75); cursor: pointer; z-index: 100; display: flex; align-items: center; justify-content: center; transition: 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.fab-repair .material-symbols-outlined { font-size: 24px; }
+.fab-repair:hover { transform: translateY(-2px); background: rgba(var(--md-sys-color-primary-rgb), 0.12); border-color: var(--md-sys-color-primary); box-shadow: 0 10px 26px rgba(0, 0, 0, 0.85); }
 .fab-repair.hidden { display: none; }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 1; visibility: visible; transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s; }
