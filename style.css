@@ -163,43 +163,24 @@ input:checked + .slider:before { transform: translateX(20px); background-color: 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 1; visibility: visible; transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s; }
 .modal-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-/* --- ЕДИНЫЙ СТИЛЬ ДЛЯ КОНТЕНТА МОДАЛОК (Repair и Info) --- */
+/* --- ЕДИНЫЙ СТИЛЬ ДЛЯ КОНТЕНТА МОДАЛОК --- */
 .modal-content { 
     width: 480px; 
-    background: #141414; /* Чуть темнее фона */
-    border-radius: 24px; 
-    padding: 32px; 
-    text-align: left; 
+    background: #141414; border-radius: 24px; 
+    padding: 32px; text-align: left; 
     box-shadow: 0 20px 60px rgba(0,0,0,0.9); 
     border: 1px solid var(--glass-border);
-    transform: scale(1); 
-    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1); 
-    display: flex; 
-    flex-direction: column; 
-    position: relative;
+    transform: scale(1); transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1); 
+    display: flex; flex-direction: column; position: relative;
 }
 .modal-overlay.hidden .modal-content { transform: scale(0.95); }
 
-.modal-content h3 { 
-    font-size: 20px; font-weight: 600; color: #fff; 
-    margin-bottom: 16px; letter-spacing: 0.5px;
-}
+.modal-content h3 { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 16px; letter-spacing: 0.5px; }
 
-.modal-close-icon {
-    position: absolute; top: 20px; right: 20px; 
-    background: transparent; border: 1px solid transparent;
-    color: var(--md-sys-color-outline); 
-    cursor: pointer; transition: 0.2s; 
-    padding: 6px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-}
-.modal-close-icon:hover { 
-    background: rgba(255,255,255,0.05); 
-    color: #fff; 
-    border-color: rgba(255,255,255,0.1);
-}
+.modal-close-icon { position: absolute; top: 20px; right: 20px; background: transparent; border: 1px solid transparent; color: var(--md-sys-color-outline); cursor: pointer; transition: 0.2s; padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.modal-close-icon:hover { background: rgba(255,255,255,0.05); color: #fff; border-color: rgba(255,255,255,0.1); }
 
-/* Стили для Repair (список) */
+/* Стили для Repair */
 .repair-list { max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; margin-top: 10px;}
 .repair-item { background: rgba(255,255,255,0.05); padding: 14px 20px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; transition: 0.2s; }
 .repair-item:hover { border-color: var(--md-sys-color-primary); background: rgba(var(--md-sys-color-primary-rgb), 0.1); }
@@ -209,38 +190,18 @@ input:checked + .slider:before { transform: translateX(20px); background-color: 
 .repair-action-btn:hover { color: var(--md-sys-color-primary); background: rgba(255,255,255,0.1); transform: scale(1.1); }
 .modal-subtitle { font-size: 14px; color: var(--md-sys-color-outline); margin-bottom: 10px; }
 
-/* Стили для Info (описание) */
-.info-body p { font-size: 14px; line-height: 1.6; color: var(--md-sys-color-outline); margin-bottom: 12px; }
-.info-price-tag {
-    display: inline-block;
-    font-size: 16px; font-weight: 700;
-    color: var(--md-sys-color-primary);
-    padding: 8px 16px;
-    border: 1px solid var(--md-sys-color-primary);
-    border-radius: 12px;
-    margin: 8px 0 24px 0;
-    background: rgba(var(--md-sys-color-primary-rgb), 0.05);
-}
+/* Стили для Info (ОБНОВЛЕННЫЕ) */
+.info-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+.info-label { font-size: 14px; color: var(--md-sys-color-outline); font-weight: 500; }
+.info-value { font-size: 15px; color: #ffffff; font-weight: 600; text-align: right; }
+.author-highlight { color: var(--md-sys-color-primary); }
+.info-description { font-size: 14px; line-height: 1.5; color: #e0e0e0; margin-bottom: 16px; max-height: 100px; overflow-y: auto; padding-right: 4px; }
 
-/* Универсальная кнопка действия в модалке (Купить / Telegram) */
-.modal-action-btn {
-    width: 100%;
-    padding: 14px;
-    border-radius: 16px;
-    border: none;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: 0.2s;
-    background-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
+/* Тег цены */
+.info-price-tag { display: block; text-align: center; font-size: 18px; font-weight: 700; color: var(--md-sys-color-primary); padding: 10px; border: 1px solid var(--md-sys-color-primary); border-radius: 12px; margin-bottom: 24px; background: rgba(var(--md-sys-color-primary-rgb), 0.05); }
+
+/* Универсальная кнопка действия в модалке */
+.modal-action-btn { width: 100%; padding: 14px; border-radius: 16px; border: none; cursor: pointer; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); text-transform: uppercase; letter-spacing: 1px; }
 .modal-action-btn:hover { opacity: 0.9; box-shadow: 0 4px 15px rgba(var(--md-sys-color-primary-rgb), 0.3); transform: translateY(-1px); }
 .modal-action-btn:active { transform: scale(0.98); }
 
