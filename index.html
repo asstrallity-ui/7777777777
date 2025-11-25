@@ -3,111 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOADER ASTR</title>
-    <link href="style.css" rel="stylesheet">
-    <!-- Google Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <title>LOADER ASTR Interface</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <!-- Splash Screen -->
     <div id="splash-screen">
-        <div class="splash-content">
-            <h1>LOADER ASTR</h1>
-            <p>Launcher Starting</p>
-            <div class="loader-line"></div>
+        <div class="loader-container">
+            <div class="status-text">Launcher Starting<span class="dots"></span></div>
+            <div class="progress-track">
+                <div class="progress-fill"></div>
+            </div>
         </div>
     </div>
 
-    <!-- App Container -->
     <div class="app-container">
-        
-        <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar glass">
             <div class="logo-area">
-                <span class="material-symbols-outlined logo-icon">rocket_launch</span>
-                <h2>ASTR</h2>
+                <img src="icon.ico" alt="Logo" class="logo-icon-img">
+                <h1>LOADER ASTR</h1>
             </div>
-            
             <nav class="nav-menu">
-                <div class="nav-item active" data-tab="catalog">
+                <button class="nav-item active" data-tab="mods">
                     <span class="material-symbols-outlined">grid_view</span>
-                    <span>Каталог</span>
-                </div>
-                <div class="nav-item" data-tab="methods">
+                    Каталог
+                </button>
+                <button class="nav-item" data-tab="install-methods">
                     <span class="material-symbols-outlined">settings_applications</span>
-                    <span>Методы</span>
-                </div>
-                <div class="nav-item" data-tab="authors">
+                    Методы установки
+                </button>
+                <button class="nav-item" data-tab="authors">
                     <span class="material-symbols-outlined">group</span>
-                    <span>Авторы</span>
-                </div>
-                <div class="nav-item" data-tab="settings">
+                    Авторы
+                </button>
+                <div style="flex-grow: 1;"></div>
+                <button class="nav-item" data-tab="settings">
                     <span class="material-symbols-outlined">palette</span>
-                    <span>Тема</span>
-                </div>
+                    Настройки темы
+                </button>
             </nav>
-
-            <div class="sidebar-footer">
-                <div class="status-badge online">
-                    <span class="dot"></span> Online
-                </div>
-            </div>
+            <div class="sidebar-footer">v 1.0.0 Beta</div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
-            
-            <!-- Header -->
-            <header class="top-bar">
+            <div class="top-bar glass">
                 <h2 id="page-title">Каталог модификаций</h2>
-                <div class="top-icons">
-                    <a href="#" class="icon-btn telegram-glow">
-                        <span class="material-symbols-outlined">send</span>
-                    </a>
+                
+                <div class="top-bar-actions">
+                    <!-- Telegram Links -->
+                    <div class="social-links">
+                        <a href="https://t.me/RHJMODS" target="_blank" class="social-btn telegram-btn" title="RHJ MODS">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.176 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                            </svg>
+                        </a>
+                        <a href="https://t.me/astrremod" target="_blank" class="social-btn telegram-btn" title="ASTR REMOD">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.176 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="divider-vertical"></div>
+
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span>Online</span>
+                    </div>
                 </div>
-            </header>
-
-            <!-- Dynamic Content Area -->
-            <div id="content-area" class="content-scroll">
-                <!-- Mod cards will be injected here -->
             </div>
-
+            <div id="content-area" class="content-grid"></div>
         </main>
     </div>
 
-    <!-- Install Progress Modal -->
-    <div id="progress-modal" class="modal hidden">
-        <div class="modal-backdrop"></div>
-        <div class="modal-content glass-panel">
-            
-            <!-- Кнопка закрытия / отмены -->
-            <div class="close-modal" onclick="cancelInstall()">
-                <span class="material-symbols-outlined">close</span>
-            </div>
-
+    <div id="progress-modal" class="modal-overlay hidden">
+        <div class="modal-content"> 
             <div id="install-view">
-                <h3 id="install-title">Установка...</h3>
+                <h3 id="modal-title">Установка...</h3>
                 <div class="progress-container">
-                    <div class="progress-bar" id="progress-bar"></div>
+                    <div id="progress-bar" class="progress-bar"></div>
                 </div>
-                <div class="install-stats">
-                    <span id="install-speed">Скачивание: 0 MB/s</span>
-                    <span id="install-percent">0%</span>
+                <div class="progress-info-row">
+                    <p id="modal-status">Скачивание: 0 MB/s</p>
+                    <span id="progress-percent">0%</span>
                 </div>
             </div>
-
-            <div id="success-view" class="hidden result-view">
+            <div id="success-view" class="view-hidden">
                 <span class="material-symbols-outlined success-icon">check_circle</span>
                 <h3>Готово!</h3>
-                <p>Установка завершена успешно</p>
+                <p class="error-text">Установка завершена успешно</p>
             </div>
-
-            <div id="error-view" class="hidden result-view">
+            <div id="error-view" class="view-hidden">
                 <span class="material-symbols-outlined error-icon">error</span>
                 <h3>Ошибка</h3>
-                <p id="error-msg">Что-то пошло не так</p>
+                <p id="error-message" class="error-text">Что-то пошло не так</p>
             </div>
         </div>
     </div>
