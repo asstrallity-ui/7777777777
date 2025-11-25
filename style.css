@@ -248,6 +248,31 @@ body {
 input:checked + .slider { background-color: var(--md-sys-color-primary); border-color: var(--md-sys-color-primary); }
 input:checked + .slider:before { transform: translateX(20px); background-color: var(--md-sys-color-on-primary); width: 24px; height: 24px; bottom: 2px; left: 2px; }
 
+/* --- АВТОРЫ И О ПРИЛОЖЕНИИ --- */
+.authors-list { display: flex; flex-direction: column; gap: 20px; }
+.author-row { display: flex; align-items: center; gap: 20px; padding: 10px; border-radius: 16px; transition: background 0.2s; }
+.author-row:hover { background: rgba(255,255,255,0.03); }
+.author-avatar-wrapper { flex-shrink: 0; width: 64px; height: 64px; position: relative; }
+.author-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: block; }
+.author-avatar-placeholder { width: 100%; height: 100%; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.author-details { display: flex; flex-direction: column; justify-content: center; flex-grow: 1; }
+.author-details h3 { font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 4px; }
+.author-details .role { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--md-sys-color-primary); font-weight: 700; margin-bottom: 6px; display: inline-block; opacity: 0.9; }
+.author-details p { font-size: 13px; line-height: 1.4; color: #ccc; margin: 0; }
+.divider { height: 1px; background: rgba(255,255,255,0.05); width: 100%; margin: 0; }
+
+.app-details { display: flex; flex-direction: column; gap: 16px; height: 100%; }
+.app-header-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.app-version-badge { background: rgba(var(--md-sys-color-primary-rgb), 0.1); color: var(--md-sys-color-primary); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; border: 1px solid var(--md-sys-color-primary); }
+.app-description-block { display: flex; flex-direction: column; gap: 8px; }
+.app-desc-text { font-size: 14px; line-height: 1.6; color: #e0e0e0; }
+.app-desc-text strong { color: #fff; font-weight: 600; }
+.app-features-list-small { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.app-features-list-small li { font-size: 13px; color: #938f99; display: flex; align-items: center; gap: 8px; }
+.app-features-list-small li::before { content: "•"; color: var(--md-sys-color-primary); font-weight: bold; }
+.app-footer-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px; }
+.app-credits { font-size: 13px; color: #666; }
+
 /* --- МОДАЛЬНОЕ ОКНО --- */
 .modal-overlay { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
