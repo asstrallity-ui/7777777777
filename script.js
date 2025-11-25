@@ -28,7 +28,7 @@ const infoDesc = document.getElementById('info-modal-desc');
 const infoActionBtn = document.getElementById('info-modal-action');
 const infoCloseBtn = document.getElementById('info-close-btn');
 
-const splash = document.getElementById('splash-screen'); // Ссылка на сплэш
+const splash = document.getElementById('splash-screen');
 
 let currentInstallMethod = 'auto'; 
 let globalModsList = []; 
@@ -36,85 +36,177 @@ let globalBuyList = [];
 let globalInstalledIds = [];
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Инициализация цвета
     const savedColor = localStorage.getItem('accentColor');
     if (savedColor) applyAccentColor(savedColor); else applyAccentColor('#d0bcff');
     
-    // Мы НЕ убираем сплэш здесь. Мы ждем загрузки данных.
-    
-    // Запуск логики проверки окружения (Python)
     let attempts = 0;
     const interval = setInterval(() => {
         attempts++;
         if (window.pywebview || attempts > 50) {
             checkEnvironment();
-            
-            // Запускаем основную загрузку. 
-            // Функция loadMods сама уберет сплэш, когда закончит.
             loadMods(); 
-            
             if (window.pywebview) clearInterval(interval);
         }
     }, 100);
     
-    // Пинг запускаем параллельно
     checkPing(); 
     setInterval(checkPing, 5000);
 });
 
 window.addEventListener('pywebviewready', checkEnvironment);
 
-// --- ГЛАВНАЯ ФУНКЦИЯ ЗАГРУЗКИ ---
-async function loadMods() {
-    // Если контент пуст, покажем спиннер (хотя он под сплэшем, но на всякий случай)
-    // contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div></div>`;
+async function checkPing() {
+    const pingText = document.getElementById('ping-text');
+    const pingDot = document.getElementById('ping-dot');
+    if (!pingText || !pingDot) return;
     
+    const start = Date.now();
     try {
-        // 1. Параллельная загрузка всех данных
+        await fetch(REPO_JSON_URL + '?t=' + start, { method: 'HEAD', cache: 'no-store' });
+        const end = Date.now();
+        const ping = end - start;
+        pingText.innerText = `Соединено: ${ping} ms`;
+        pingDot.style.backgroundColor = ping < 150 ? '#4caf50' : (ping < 300 ? '#ff9800' : '#f44336');
+        pingDot.style.boxShadow = `0 0 8px ${pingDot.style.backgroundColor}`;
+    } catch (e) {
+        pingText.innerText = 'Нет сети';
+        pingDot.style.backgroundColor = '#f44336';
+        pingDot.style.boxShadow = 'none';
+    }
+}
+
+function applyAccentColor(color) {
+    const div = document.createElement('div');
+    div.style.color = color;
+    document.body.appendChild(div);
+    const computed = window.getComputedStyle(div).color; 
+    document.body.removeChild(div);
+
+    const rgbMatch = computed.match(/\d+/g);
+    if (rgbMatch) {
+        const rgbVal = `${rgbMatch[0]}, ${rgbMatch[1]}, ${rgbMatch[2]}`;
+        document.documentElement.style.setProperty('--md-sys-color-primary', computed);
+        document.documentElement.style.setProperty('--md-sys-color-primary-rgb', rgbVal);
+        document.documentElement.style.setProperty('--md-sys-color-on-primary', '#1e1e1e');
+    }
+}
+
+function renderSettings() {
+    let col = getComputedStyle(document.documentElement).getPropertyValue('--md-sys-color-primary').trim();
+    
+    contentArea.innerHTML = `
+        <div class="full-height-container">
+            <div class="big-panel grow-panel">
+                <h2 class="panel-title">Персонализация</h2>
+                
+                <div class="custom-color-picker">
+                    <div class="picker-header">
+                        <div class="current-color-preview" id="color-preview" style="background-color: ${col};"></div>
+                        <div class="picker-info">
+                            <h3>Акцентный цвет</h3>
+                            <p>Выберите основной цвет интерфейса</p>
+                        </div>
+                    </div>
+                    
+                    <div class="picker-controls">
+                        <label>Оттенок</label>
+                        <input type="range" min="0" max="360" value="260" class="slider-hue" id="hue-slider">
+                        
+                        <label style="margin-top:16px;">Пресеты</label>
+                        <div class="presets-grid">
+                            <div class="color-preset" style="background: #d0bcff" data-col="#d0bcff"></div>
+                            <div class="color-preset" style="background: #ff4081" data-col="#ff4081"></div>
+                            <div class="color-preset" style="background: #00e676" data-col="#00e676"></div>
+                            <div class="color-preset" style="background: #2979ff" data-col="#2979ff"></div>
+                            <div class="color-preset" style="background: #ffea00" data-col="#ffea00"></div>
+                            <div class="color-preset" style="background: #e040fb" data-col="#e040fb"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider" style="margin: 24px 0;"></div>
+                <button class="reset-theme-btn" onclick="resetTheme()">
+                    <span class="material-symbols-outlined">restart_alt</span> Сбросить тему
+                </button>
+            </div>
+        </div>`;
+
+    const hueSlider = document.getElementById('hue-slider');
+    const preview = document.getElementById('color-preview');
+    const presets = document.querySelectorAll('.color-preset');
+
+    if (hueSlider) {
+        hueSlider.addEventListener('input', (e) => {
+            const hue = e.target.value;
+            const color = `hsl(${hue}, 100%, 75%)`; 
+            applyAccentColor(color);
+            localStorage.setItem('accentColor', color);
+            preview.style.backgroundColor = color;
+        });
+    }
+
+    presets.forEach(p => {
+        p.addEventListener('click', () => {
+            const color = p.getAttribute('data-col');
+            applyAccentColor(color);
+            localStorage.setItem('accentColor', color);
+            preview.style.backgroundColor = color;
+        });
+    });
+}
+
+window.resetTheme = function() { applyAccentColor('#d0bcff'); localStorage.removeItem('accentColor'); renderSettings(); }
+
+function checkEnvironment() {
+    const repairBtn = document.getElementById('global-repair-btn');
+    if (window.pywebview && repairBtn) repairBtn.classList.remove('hidden');
+}
+
+navItems.forEach(item => {
+    item.addEventListener('click', () => {
+        navItems.forEach(n => n.classList.remove('active')); item.classList.add('active');
+        handleTabChange(item.getAttribute('data-tab'));
+    });
+});
+function handleTabChange(tab) {
+    contentArea.classList.add('fade-out');
+    setTimeout(() => {
+        contentArea.innerHTML = ''; contentArea.className = '';
+        if (tab === 'mods') { contentArea.classList.add('content-grid'); loadMods(); }
+        else if (tab === 'install-methods') renderInstallMethods();
+        else if (tab === 'authors') loadAuthors();
+        else if (tab === 'settings') renderSettings();
+        requestAnimationFrame(() => contentArea.classList.remove('fade-out'));
+    }, 250);
+}
+
+async function loadMods() {
+    try {
         const [modsResp, buyResp] = await Promise.all([
             fetch(REPO_JSON_URL).catch(e => null),
-            fetch(REPO_BUY_URL).catch(() => ({ json: () => [] })) // Если нет файла, пустой массив
+            fetch(REPO_BUY_URL).catch(() => ({ json: () => [] }))
         ]);
 
-        if (!modsResp || !modsResp.ok) throw new Error("Не удалось загрузить каталог модов");
+        if (!modsResp || !modsResp.ok) throw new Error("Не удалось загрузить каталог");
 
         globalModsList = await modsResp.json(); 
         globalBuyList = await buyResp.json();
-
-        // 2. Проверка установленных модов (через Python)
         globalInstalledIds = [];
+        
         if (window.pywebview) {
-            try { 
-                globalInstalledIds = await window.pywebview.api.check_installed_mods(globalModsList); 
-            } catch (e) { console.error("Ошибка проверки установки:", e); }
+            try { globalInstalledIds = await window.pywebview.api.check_installed_mods(globalModsList); } catch (e) {}
         }
-
-        // 3. Отрисовка интерфейса (карточек)
         renderMods(globalModsList, globalInstalledIds, globalBuyList);
-
     } catch (e) { 
-        contentArea.innerHTML = `
-            <div class="empty-state">
-                <span class="material-symbols-outlined empty-icon">wifi_off</span>
-                <p>Ошибка загрузки: ${e.message}</p>
-                <button class="install-btn" onclick="location.reload()" style="margin-top:20px; width: auto;">Повторить</button>
-            </div>`; 
+        contentArea.innerHTML = `<div class="empty-state"><p>Ошибка загрузки: ${e.message}</p></div>`; 
     } finally {
-        // 4. СКРЫВАЕМ СПЛЭШ (Только когда всё готово или произошла ошибка)
-        // Добавляем небольшую задержку для плавности
-        setTimeout(() => {
-            if(splash) splash.classList.add('fade-out');
-        }, 500);
+        setTimeout(() => { if(splash) splash.classList.add('fade-out'); }, 500);
     }
 }
 
 function renderMods(mods, installedIds, buyList) {
     contentArea.innerHTML = '';
-    
-    if (!mods || mods.length === 0) {
-        contentArea.innerHTML = '<p class="empty-text">Список модов пуст.</p>';
-        return;
-    }
+    if (!mods || mods.length === 0) { contentArea.innerHTML = '<p class="empty-text">Пусто.</p>'; return; }
 
     mods.forEach(mod => {
         let img = mod.image || ""; if(img && !img.startsWith('http')) img = REPO_BASE_URL + img;
@@ -151,7 +243,6 @@ function renderMods(mods, installedIds, buyList) {
             }
         }
 
-        // Сразу формируем HTML карточки с правильными классами и текстами
         const card = document.createElement('div');
         card.className = 'mod-card';
         card.innerHTML = `
@@ -168,8 +259,6 @@ function renderMods(mods, installedIds, buyList) {
     });
 }
 
-// ... (Остальной код без изменений: openInfoModal, install, ping и т.д.) ...
-
 function openInfoModal(type, modId) {
     const buyItem = globalBuyList.find(b => b.id === modId);
     const modItem = globalModsList.find(m => m.id === modId);
@@ -185,14 +274,8 @@ function openInfoModal(type, modId) {
     infoTitle.innerText = statusTitle;
     
     infoDesc.innerHTML = `
-        <div class="info-row">
-            <span class="info-label">Мод:</span>
-            <span class="info-value">${modItem.name}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Автор:</span>
-            <span class="info-value author-highlight">${modItem.author}</span>
-        </div>
+        <div class="info-row"><span class="info-label">Мод:</span><span class="info-value">${modItem.name}</span></div>
+        <div class="info-row"><span class="info-label">Автор:</span><span class="info-value author-highlight">${modItem.author}</span></div>
         <div class="divider" style="margin: 16px 0;"></div>
         <p class="info-description">${buyItem.desc || "Описание недоступно."}</p>
         <div class="info-price-tag">${buyItem.price || "Цена договорная"}</div>
@@ -203,82 +286,6 @@ function openInfoModal(type, modId) {
 }
 
 if(infoCloseBtn) infoCloseBtn.addEventListener('click', () => infoModal.classList.add('hidden'));
-
-async function checkPing() {
-    const pingText = document.getElementById('ping-text');
-    const pingDot = document.getElementById('ping-dot');
-    if (!pingText || !pingDot) return;
-    
-    const start = Date.now();
-    try {
-        await fetch(REPO_JSON_URL + '?t=' + start, { method: 'HEAD', cache: 'no-store' });
-        const end = Date.now();
-        const ping = end - start;
-        pingText.innerText = `Соединено: ${ping} ms`;
-        pingDot.style.backgroundColor = ping < 150 ? '#4caf50' : (ping < 300 ? '#ff9800' : '#f44336');
-        pingDot.style.boxShadow = `0 0 8px ${pingDot.style.backgroundColor}`;
-    } catch (e) {
-        pingText.innerText = 'Нет сети';
-        pingDot.style.backgroundColor = '#f44336';
-        pingDot.style.boxShadow = 'none';
-    }
-}
-
-function hexToRgb(hex) {
-    hex = hex.replace('#', '');
-    let bigint = parseInt(hex, 16);
-    let r = (bigint >> 16) & 255, g = (bigint >> 8) & 255, b = bigint & 255;
-    return `${r}, ${g}, ${b}`;
-}
-function applyAccentColor(color) {
-    document.documentElement.style.setProperty('--md-sys-color-primary', color);
-    document.documentElement.style.setProperty('--md-sys-color-primary-rgb', hexToRgb(color));
-    document.documentElement.style.setProperty('--md-sys-color-on-primary', '#1e1e1e');
-}
-function renderSettings() {
-    let col = getComputedStyle(document.documentElement).getPropertyValue('--md-sys-color-primary').trim();
-    contentArea.innerHTML = `
-        <div class="full-height-container">
-            <div class="big-panel grow-panel">
-                <h2 class="panel-title">Персонализация</h2>
-                <div class="color-picker-container">
-                    <div class="color-preview-wrapper"><input type="color" id="accent-color-input" value="${col}"><div class="color-preview-icon" style="background-color: ${col};"></div></div>
-                    <div class="color-info"><h3>Акцентный цвет</h3><p>Выберите основной цвет интерфейса.</p></div>
-                </div>
-                <div class="divider" style="margin: 24px 0;"></div>
-                <button class="reset-theme-btn" onclick="resetTheme()"><span class="material-symbols-outlined">restart_alt</span> Сбросить тему</button>
-            </div>
-        </div>`;
-    const inp = document.getElementById('accent-color-input');
-    const ico = document.querySelector('.color-preview-icon');
-    if(inp) inp.addEventListener('input', (e) => {
-        applyAccentColor(e.target.value); localStorage.setItem('accentColor', e.target.value); ico.style.backgroundColor = e.target.value;
-    });
-}
-window.resetTheme = function() { applyAccentColor('#d0bcff'); localStorage.removeItem('accentColor'); renderSettings(); }
-
-function checkEnvironment() {
-    const repairBtn = document.getElementById('global-repair-btn');
-    if (window.pywebview && repairBtn) repairBtn.classList.remove('hidden');
-}
-
-navItems.forEach(item => {
-    item.addEventListener('click', () => {
-        navItems.forEach(n => n.classList.remove('active')); item.classList.add('active');
-        handleTabChange(item.getAttribute('data-tab'));
-    });
-});
-function handleTabChange(tab) {
-    contentArea.classList.add('fade-out');
-    setTimeout(() => {
-        contentArea.innerHTML = ''; contentArea.className = '';
-        if (tab === 'mods') { contentArea.classList.add('content-grid'); loadMods(); }
-        else if (tab === 'install-methods') renderInstallMethods();
-        else if (tab === 'authors') loadAuthors();
-        else if (tab === 'settings') renderSettings();
-        requestAnimationFrame(() => contentArea.classList.remove('fade-out'));
-    }, 250);
-}
 
 function renderInstallMethods() {
     contentArea.innerHTML = `
