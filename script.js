@@ -3,7 +3,7 @@ const REPO_BASE_URL = 'https://rh-archive.ru/mods_files_github/';
 const REPO_JSON_URL = 'https://rh-archive.ru/mods_files_github/mods.json';
 const REPO_AUTHORS_URL = 'https://rh-archive.ru/mods_files_github/authors.json';
 
-// --- DOM ---
+// --- DOM ЭЛЕМЕНТЫ ---
 const contentArea = document.getElementById('content-area');
 const navItems = document.querySelectorAll('.nav-item');
 const modal = document.getElementById('progress-modal');
@@ -15,7 +15,7 @@ const modalTitle = document.getElementById('modal-title');
 const modalStatus = document.getElementById('modal-status');
 const progressBar = document.getElementById('progress-bar');
 const progressPercent = document.getElementById('progress-percent');
-const modalCloseBtn = document.getElementById('modal-close-btn'); // Кнопка отмены
+const modalCloseBtn = document.getElementById('modal-close-btn');
 
 let currentInstallMethod = 'auto'; 
 let isAppEnvironment = false;
@@ -29,13 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setTimeout(() => splash.classList.add('fade-out'), 2600); 
     
-    // Сначала проверяем среду, потом грузим моды
     let attempts = 0;
     const interval = setInterval(() => {
         attempts++;
         if (window.pywebview || attempts > 50) {
             checkEnvironment();
-            loadMods(); // Грузим моды только когда знаем, есть ли Python
+            loadMods(); // Грузим моды только после проверки среды
             if (window.pywebview) clearInterval(interval);
         }
     }, 100);
@@ -43,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('pywebviewready', checkEnvironment);
 
-// --- ТЕМА ---
+// --- ТЕМА И НАСТРОЙКИ ---
 function hexToRgb(hex) {
     hex = hex.replace('#', '');
     let bigint = parseInt(hex, 16);
@@ -80,6 +79,7 @@ function renderSettings() {
                 </button>
             </div>
         </div>`;
+    
     const colorInput = document.getElementById('accent-color-input');
     const previewIcon = document.querySelector('.color-preview-icon');
     if (colorInput) {
@@ -135,27 +135,19 @@ function handleTabChange(tab) {
     }, 250); 
 }
 
-// --- ЗАГРУЗКА МОДОВ (С ПРОВЕРКОЙ) ---
+// --- ЗАГРУЗКА КОНТЕНТА ---
 async function loadMods() {
     contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div><p>Загрузка списка...</p></div>`;
     try {
-        // 1. Получаем JSON с модами
         const response = await fetch(REPO_JSON_URL);
-        if (!response.ok) throw new Error(`Ошибка сети: ${response.status}`);
         const mods = await response.json();
 
-        // 2. Если мы в приложении, проверяем какие моды уже стоят
+        // Проверка установленных модов
         let installedList = [];
         if (window.pywebview) {
-            // Отправляем список ID модов в Python, чтобы он проверил их папки
-            // Для этого передадим ID модов. (Предполагаем, что ID мода == Имя папки внутри архива,
-            // но лучше если в JSON будет поле "folder_name". Если нет, используем id как ключ)
             try {
-                // В Python мы сделаем функцию check_installed_mods(mods_list)
                 installedList = await window.pywebview.api.check_installed_mods(mods);
-            } catch (e) {
-                console.error("Ошибка проверки установленных модов:", e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         renderMods(mods, installedList);
@@ -166,7 +158,6 @@ async function loadMods() {
 
 function renderMods(mods, installedList) {
     contentArea.innerHTML = '';
-    
     mods.forEach(mod => {
         let fileUrl = mod.file || "";
         if (fileUrl && !fileUrl.startsWith('http')) fileUrl = REPO_BASE_URL + fileUrl;
@@ -174,30 +165,14 @@ function renderMods(mods, installedList) {
         if (imageUrl && !imageUrl.startsWith('http')) imageUrl = REPO_BASE_URL + imageUrl;
         if (!imageUrl) imageUrl = "https://via.placeholder.com/400x220/111/fff?text=No+Image";
 
-        // Проверяем, установлен ли мод
         const isInstalled = installedList.includes(mod.id);
-
         const card = document.createElement('div');
         card.className = 'mod-card';
         
-        let btnText = 'Скачать';
-        let btnIcon = 'download';
-        let btnClass = 'install-btn';
-        let isDisabled = false;
-
-        if (window.pywebview) {
-            if (isInstalled) {
-                btnText = 'Уже установлен';
-                btnIcon = 'check';
-                btnClass = 'install-btn installed';
-                isDisabled = true;
-            } else {
-                btnText = 'Установить';
-            }
-        } else {
-            btnText = 'Доступно в приложении';
-            isDisabled = true;
-        }
+        let btnText = isAppEnvironment ? (isInstalled ? 'Уже установлен' : 'Установить') : 'Доступно в приложении';
+        let btnIcon = isInstalled ? 'check' : 'download';
+        let btnClass = isInstalled ? 'install-btn installed' : 'install-btn';
+        let isDisabled = !isAppEnvironment || isInstalled;
 
         const authorHtml = mod.author ? `<p class="card-author">Автор: <span>${mod.author}</span></p>` : '';
 
@@ -210,13 +185,11 @@ function renderMods(mods, installedList) {
                 <button class="${btnClass}" ${isDisabled ? 'disabled' : ''} onclick="startInstallProcess('${mod.id}', '${mod.name}', '${fileUrl}')">
                     <span class="material-symbols-outlined">${btnIcon}</span> ${btnText}
                 </button>
-            </div>
-        `;
+            </div>`;
         contentArea.appendChild(card);
     });
 }
 
-// --- АВТОРЫ ---
 async function loadAuthors() {
     contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div></div>`;
     try {
@@ -253,10 +226,9 @@ async function loadAuthors() {
                     </div>
                 </div>
             </div>`;
-    } catch (error) { contentArea.innerHTML = `<p style="color:#ff5252; text-align:center;">Ошибка авторов.<br>${error.message}</p>`; }
+    } catch (error) { contentArea.innerHTML = `<p style="color:#ff5252; text-align:center;">Ошибка.<br>${error.message}</p>`; }
 }
 
-// --- МЕТОДЫ ---
 function renderInstallMethods() {
     contentArea.innerHTML = `
         <div class="full-height-container">
@@ -287,7 +259,7 @@ function renderInstallMethods() {
     noSdlsToggle.addEventListener('change', () => { if(noSdlsToggle.checked){autoToggle.checked=false;sdlsToggle.checked=false;updateVisuals('no_sdls');}else noSdlsToggle.checked=true; });
 }
 
-// --- УСТАНОВКА ---
+// --- УСТАНОВКА И ОТМЕНА ---
 function startInstallProcess(id, name, url) {
     if (!window.pywebview) return;
     if (!url || url === "undefined") { alert("Ошибка: Ссылка на файл не найдена!"); return; }
@@ -295,25 +267,21 @@ function startInstallProcess(id, name, url) {
     installView.classList.remove('view-hidden');
     successView.classList.add('view-hidden');
     errorView.classList.add('view-hidden');
-    
     progressBar.style.width = "0%";
     progressPercent.innerText = "0%";
     modalTitle.innerText = name;
     modalStatus.innerText = "Подключение...";
-    
     modal.classList.remove('hidden');
     
-    // Запускаем установку
     window.pywebview.api.install_mod(id, url, currentInstallMethod);
 }
 
-// Кнопка отмены
-modalCloseBtn.addEventListener('click', () => {
-    if (window.pywebview) {
-        window.pywebview.api.cancel_install();
-    }
-    closeModal();
-});
+if (modalCloseBtn) {
+    modalCloseBtn.addEventListener('click', () => {
+        if (window.pywebview) window.pywebview.api.cancel_install();
+        closeModal();
+    });
+}
 
 window.updateRealProgress = function(percent, text) {
     progressBar.style.width = percent + "%";
@@ -325,14 +293,10 @@ window.finishInstall = function(success, message) {
     installView.classList.add('view-hidden');
     if (success) {
         successView.classList.remove('view-hidden');
-        setTimeout(() => {
-            closeModal();
-            loadMods(); // Обновляем список, чтобы кнопка стала "Установлено"
-        }, 2500); 
+        setTimeout(() => { closeModal(); loadMods(); }, 2500); 
     } else {
-        if (message === "Canceled") {
-            closeModal(); // Просто закрываем, если отмена
-        } else {
+        if (message === "Canceled") closeModal();
+        else {
             errorView.classList.remove('view-hidden');
             errorMessage.innerText = message;
             setTimeout(closeModal, 3500);
