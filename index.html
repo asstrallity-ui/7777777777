@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- ЗАГРУЗЧИК -->
     <div id="splash-screen">
         <div class="loader-container">
             <div class="status-text">Launcher Starting<span class="dots"></span></div>
@@ -19,11 +18,9 @@
         </div>
     </div>
 
-    <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
     <div class="app-container">
         <aside class="sidebar glass">
             <div class="logo-area">
-                <!-- Иконка приложения -->
                 <img src="icon.ico" alt="Logo" class="logo-icon-img">
                 <h1>LOADER ASTR</h1>
             </div>
@@ -39,6 +36,14 @@
                 <button class="nav-item" data-tab="authors">
                     <span class="material-symbols-outlined">group</span>
                     Авторы
+                </button>
+                
+                <!-- Распорка, чтобы настройки были внизу -->
+                <div style="flex-grow: 1;"></div>
+
+                <button class="nav-item" data-tab="settings">
+                    <span class="material-symbols-outlined">palette</span>
+                    Настройки темы
                 </button>
             </nav>
             <div class="sidebar-footer">v 1.0.0 Beta</div>
@@ -56,7 +61,6 @@
         </main>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО -->
     <div id="progress-modal" class="modal-overlay hidden">
         <div class="modal-content"> 
             <div id="install-view">
@@ -69,13 +73,11 @@
                     <span id="progress-percent">0%</span>
                 </div>
             </div>
-
             <div id="success-view" class="view-hidden">
                 <span class="material-symbols-outlined success-icon">check_circle</span>
                 <h3>Готово!</h3>
                 <p class="error-text">Установка завершена успешно</p>
             </div>
-
             <div id="error-view" class="view-hidden">
                 <span class="material-symbols-outlined error-icon">error</span>
                 <h3>Ошибка</h3>
