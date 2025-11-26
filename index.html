@@ -30,14 +30,7 @@
                 <button class="nav-item active" data-tab="mods"><span class="material-symbols-outlined">grid_view</span>Каталог</button>
                 <button class="nav-item" data-tab="install-methods"><span class="material-symbols-outlined">settings_applications</span>Методы установки</button>
                 <button class="nav-item" data-tab="authors"><span class="material-symbols-outlined">group</span>Авторы</button>
-                
                 <div style="flex-grow: 1;"></div>
-                
-                <!-- КНОПКА ПРОВЕРКИ ОБНОВЛЕНИЙ -->
-                <button class="nav-item" id="btn-check-updates">
-                    <span class="material-symbols-outlined">update</span>Проверить обновления
-                </button>
-
                 <button class="nav-item" data-tab="settings"><span class="material-symbols-outlined">palette</span>Настройки темы</button>
             </nav>
             <div class="sidebar-footer">v 1.0.0 Beta</div>
@@ -60,7 +53,10 @@
             </div>
 
             <div id="content-area" class="content-grid">
-                <div class="loader-spinner"><div class="spinner"></div><p>Загрузка каталога...</p></div>
+                <div class="loader-spinner">
+                    <div class="spinner"></div>
+                    <p>Загрузка каталога...</p>
+                </div>
             </div>
         </main>
     </div>
@@ -103,28 +99,6 @@
             <button id="info-modal-action" class="modal-action-btn"></button>
         </div>
     </div>
-
-    <!-- ОКНО ОБНОВЛЕНИЯ -->
-    <div id="update-modal" class="modal-overlay hidden">
-        <div class="modal-content" style="text-align: left; width: 500px;">
-            <h3 style="margin-bottom: 8px;">Доступно обновление!</h3>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 16px; color: #ccc; font-size: 14px;">
-                <span>Версия: <strong id="update-version" style="color: #fff;"></strong></span>
-                <span>Размер: <strong id="update-size" style="color: #fff;"></strong></span>
-            </div>
-            <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1);">
-                <p style="color: #938f99; font-size: 11px; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; font-weight: 700;">Список изменений</p>
-                <p id="update-changelog" style="color: #e0e0e0; font-size: 14px; line-height: 1.6; white-space: pre-line;"></p>
-            </div>
-            <div style="display: flex; gap: 12px;">
-                <button id="btn-start-update" class="install-btn"><span class="material-symbols-outlined">download</span> Обновить</button>
-                <button id="btn-skip-update" class="install-btn" style="background: transparent; border: 1px solid #444; color: #aaa;">Позже</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- TOAST -->
-    <div id="toast-notification" class="toast hidden">У вас последняя версия</div>
 
     <script src="script.js"></script>
 </body>
