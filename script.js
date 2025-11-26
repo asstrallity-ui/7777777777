@@ -296,26 +296,10 @@ function openInfoModal(type, modId) {
     const modItem = globalModsList.find(m => m.id === modId);
     if (!buyItem || !modItem) return;
     infoModal.classList.remove('hidden');
-
-    let statusTitle, btnText, btnIcon, showButton;
-
-    if (type === 'preorder') {
-        statusTitle = 'Предзаказ';
-        btnText = 'ЗАКАЗАТЬ';
-        btnIcon = 'schedule';
-        showButton = true;
-    } else if (type === 'testing') {
-        statusTitle = 'В процессе....';
-        btnText = '';
-        btnIcon = '';
-        showButton = false;
-    } else {
-        statusTitle = 'Платный контент';
-        btnText = 'КУПИТЬ';
-        btnIcon = 'shopping_cart';
-        showButton = true;
-    }
-
+    infoActionBtn.className = 'modal-action-btn'; 
+    let statusTitle = type === 'preorder' ? 'Предзаказ' : 'Платный контент';
+    let btnText = type === 'preorder' ? 'ЗАКАЗАТЬ' : 'КУПИТЬ';
+    let btnIcon = type === 'preorder' ? 'schedule' : 'shopping_cart';
     infoTitle.innerText = statusTitle;
     infoDesc.innerHTML = `
         <div class="info-row"><span class="info-label">Мод:</span><span class="info-value">${modItem.name}</span></div>
@@ -324,14 +308,8 @@ function openInfoModal(type, modId) {
         <p class="info-description">${buyItem.desc || "Описание недоступно."}</p>
         <div class="info-price-tag">${buyItem.price || "Цена договорная"}</div>
     `;
-
-    if (showButton) {
-        infoActionBtn.style.display = 'flex';
-        infoActionBtn.innerHTML = `${btnText} <span class="material-symbols-outlined">${btnIcon}</span>`;
-        infoActionBtn.onclick = () => { if (buyItem.link) window.open(buyItem.link, '_blank'); };
-    } else {
-        infoActionBtn.style.display = 'none';
-    }
+    infoActionBtn.innerHTML = `${btnText} <span class="material-symbols-outlined">${btnIcon}</span>`;
+    infoActionBtn.onclick = () => { if (buyItem.link) window.open(buyItem.link, '_blank'); };
 }
 
 if(infoCloseBtn) infoCloseBtn.addEventListener('click', () => infoModal.classList.add('hidden'));
