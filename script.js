@@ -39,11 +39,6 @@ const btnStartUpdate = document.getElementById('btn-start-update');
 const btnSkipUpdate = document.getElementById('btn-skip-update');
 const toast = document.getElementById('toast-notification');
 
-// GEO Check
-const geoModal = document.getElementById('geo-modal');
-const geoExitBtn = document.getElementById('geo-exit-btn');
-const geoContinueBtn = document.getElementById('geo-continue-btn');
-
 let currentInstallMethod = 'auto'; 
 let globalModsList = []; 
 let globalBuyList = []; 
@@ -53,7 +48,7 @@ let newUpdateUrl = "";
 document.addEventListener('DOMContentLoaded', () => {
     const savedColor = localStorage.getItem('accentColor');
     if (savedColor) applyAccentColor(savedColor); else applyAccentColor('#d0bcff');
-
+    
     let attempts = 0;
     const interval = setInterval(() => {
         attempts++;
@@ -63,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.pywebview) clearInterval(interval);
         }
     }, 100);
-
+    
     checkPing(); 
     setInterval(checkPing, 5000);
 });
@@ -77,54 +72,20 @@ function showToast(msg) {
     setTimeout(() => toast.classList.add('hidden'), 3000);
 }
 
-async function checkGeoRestriction() {
-    if (!window.pywebview || !window.pywebview.api || !window.pywebview.api.check_connection_status) {
-        return;
-    }
-    try {
-        const res = await window.pywebview.api.check_connection_status();
-        if (res && res.status === 'blocked') {
-            if (geoModal) {
-                geoModal.classList.remove('hidden');
-            }
-        }
-    } catch (e) {
-        console.warn('Geo check failed', e);
-    }
-}
-
-if (geoExitBtn) {
-    geoExitBtn.addEventListener('click', () => {
-        if (window.pywebview && window.pywebview.api && window.pywebview.api.close) {
-            window.pywebview.api.close();
-        } else if (geoModal) {
-            geoModal.classList.add('hidden');
-        }
-    });
-}
-
-if (geoContinueBtn) {
-    geoContinueBtn.addEventListener('click', () => {
-        if (geoModal) {
-            geoModal.classList.add('hidden');
-        }
-    });
-}
-
 async function checkForUpdates(manual = false) {
     if (!window.pywebview) {
         if(manual) showToast("Доступно только в приложении");
         return;
     }
-
+    
     if(manual && btnCheckUpdates) {
         const icon = btnCheckUpdates.querySelector('span');
-        if(icon) icon.style.animation = "spin 1s linear infinite";
+        icon.style.animation = "spin 1s linear infinite";
     }
 
     try {
         const res = await window.pywebview.api.check_for_updates();
-
+        
         if (res.available) {
             newUpdateUrl = res.url;
             updateVerSpan.innerText = "v" + res.version;
@@ -139,7 +100,7 @@ async function checkForUpdates(manual = false) {
     } finally {
         if(manual && btnCheckUpdates) {
             const icon = btnCheckUpdates.querySelector('span');
-            if(icon) icon.style.animation = "none";
+            icon.style.animation = "none";
         }
     }
 }
@@ -161,7 +122,7 @@ async function checkPing() {
     const pingText = document.getElementById('ping-text');
     const pingDot = document.getElementById('ping-dot');
     if (!pingText || !pingDot) return;
-
+    
     const start = Date.now();
     try {
         await fetch(REPO_JSON_URL + '?t=' + start, { method: 'HEAD', cache: 'no-store' });
@@ -248,8 +209,7 @@ window.resetTheme = function() { applyAccentColor('#d0bcff'); localStorage.remov
 function checkEnvironment() {
     const repairBtn = document.getElementById('global-repair-btn');
     if (window.pywebview && repairBtn) repairBtn.classList.remove('hidden');
-    checkForUpdates(false); 
-    checkGeoRestriction(); 
+    checkForUpdates(false); checkGeoRestriction(); 
 }
 
 navItems.forEach(item => {
@@ -273,62 +233,28 @@ function handleTabChange(tab) {
 }
 
 async function loadMods() {
-    if (splash && splash.style.display !== 'none') {
-        splash.style.opacity = '0';
-        setTimeout(() => { 
-            splash.style.display = 'none';
-        }, 800);
-    }
-
-    const activeNav = document.querySelector('.nav-item.active');
-    const currentTab = activeNav ? activeNav.getAttribute('data-tab') : 'mods';
-
-    contentArea.innerHTML = '<div class="loader-spinner"><div class="spinner"></div><p>Обновление данных...</p></div>';
-
     try {
-        let r = await fetch(REPO_JSON_URL + '?t=' + Date.now());
-        if(!r.ok) throw new Error("JSON error");
-        let mods = await r.json();
-
-        let buys = [];
-        try {
-            let r2 = await fetch(REPO_BUY_URL + '?t=' + Date.now());
-            if(r2.ok) buys = await r2.json();
-        } catch(e){}
-
-        let installedIds = [];
-        if(window.pywebview) {
-            installedIds = await window.pywebview.api.check_installed_mods(mods);
+        const [modsResp, buyResp] = await Promise.all([
+            fetch(REPO_JSON_URL).catch(e => null),
+            fetch(REPO_BUY_URL).catch(() => ({ json: () => [] }))
+        ]);
+        if (!modsResp || !modsResp.ok) throw new Error("Не удалось загрузить каталог");
+        globalModsList = await modsResp.json(); 
+        globalBuyList = await buyResp.json();
+        globalInstalledIds = [];
+        if (window.pywebview) {
+            try { globalInstalledIds = await window.pywebview.api.check_installed_mods(globalModsList); } catch (e) {}
         }
-
-        globalModsList = mods;
-        globalBuyList = buys;
-        globalInstalledIds = installedIds;
-
-        if (currentTab === 'install-methods') {
-            renderInstallMethods();
-        } else if (currentTab === 'authors') {
-            loadAuthors();
-        } else if (currentTab === 'settings') {
-            renderSettings();
-        } else {
-            renderMods(mods, installedIds, buys);
-        }
-
-        const rb = document.getElementById('global-repair-btn');
-        if(rb) {
-            if (installedIds.length > 0) rb.classList.remove('hidden');
-            else rb.classList.add('hidden');
-        }
-
-    } catch (e) {
-        contentArea.innerHTML = `<div class="empty-state"><span class="material-symbols-outlined empty-icon">wifi_off</span><h3>Ошибка сети</h3><p>${e.message}</p></div>`;
+        renderMods(globalModsList, globalInstalledIds, globalBuyList);
+    } catch (e) { 
+        contentArea.innerHTML = `<div class="empty-state"><p>Ошибка загрузки: ${e.message}</p></div>`; 
+    } finally {
+        setTimeout(() => { if(splash) splash.classList.add('fade-out'); }, 500);
     }
 }
 
 function renderMods(mods, installedIds, buyList) {
     contentArea.innerHTML = '';
-    contentArea.classList.add('content-grid'); 
     if (!mods || mods.length === 0) { contentArea.innerHTML = '<p class="empty-text">Пусто.</p>'; return; }
     mods.forEach(mod => {
         let img = mod.image || ""; if(img && !img.startsWith('http')) img = REPO_BASE_URL + img;
@@ -476,3 +402,36 @@ async function restoreMod(id, name) {
 
 if(repairCloseBtn) repairCloseBtn.addEventListener('click', () => repairModal.classList.add('hidden'));
 const rb = document.getElementById('global-repair-btn'); if(rb) rb.addEventListener('click', openRepairModal);
+
+
+// --- GEO RESTRICTION LOGIC ---
+const geoModal = document.getElementById('geo-modal');
+const geoExitBtn = document.getElementById('geo-exit-btn');
+
+async function checkGeoRestriction() {
+    if (!window.pywebview || !window.pywebview.api || !window.pywebview.api.check_connection_status) {
+        return;
+    }
+    try {
+        const res = await window.pywebview.api.check_connection_status();
+        // { status: "blocked", country: "UA" }
+        if (res && res.status === 'blocked') {
+            if (geoModal) {
+                geoModal.classList.remove('hidden');
+            }
+        }
+    } catch (e) {
+        console.warn('Geo check failed', e);
+    }
+}
+
+if (geoExitBtn) {
+    geoExitBtn.addEventListener('click', () => {
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.close) {
+            window.pywebview.api.close();
+        } else if (geoModal) {
+            // Fallback if API fails (for testing)
+            geoModal.classList.add('hidden');
+        }
+    });
+}
