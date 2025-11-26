@@ -354,7 +354,7 @@ async function loadAuthors() {
         contentArea.innerHTML = `
             <div class="about-page-container">
                 <div class="big-panel authors-panel"><h2 class="panel-title">Команда проекта</h2><div class="authors-list">${authorsListHtml}</div></div>
-                <div class="big-panel app-info-panel"><h2 class="panel-title">О приложении</h2><div class="app-details"><div class="app-header-row"><span class="app-version-badge">LOADER ASTR v1.0.0 Beta</span><span style="font-size: 13px; color: #666;">Build: 2025.11.25</span></div><div class="app-description-block"><p class="app-desc-text">Это универсальный лаунчер-загрузчик модов в игру <strong>Tanks Blitz</strong>.</p><ul class="app-features-list-new"><li>Учитывает <strong>sDLS</strong> (Steam DLC System)</li><li>Поддерживает обычные обновления</li><li>Автоматические бэкапы</li><li>Удобный каталог модификаций</li><li>Быстрое восстановление игры</li></ul></div><div style="flex-grow: 1;"></div><div class="app-footer-row"><p class="app-credits">(C) Launcher 2025</p></div></div></div>
+                <div class="big-panel app-info-panel"><h2 class="panel-title">О приложении</h2><div class="app-details"><div class="app-header-row"><span class="app-version-badge">LOADER ASTR v1.0.0 Beta</span><span style="font-size: 13px; color: #666;">Build: 2025.11.25</span></div><div class="app-description-block"><p class="app-desc-text">Это универсальный лаунчер-загрузчик модов в игру <strong>Tanks Blitz</strong>.</p><ul class="app-features-list-new"><li>Учитывает <strong>sDLS</strong></li><li>Поддерживает обычные обновления</li><li>Автоматические бэкапы</li><li>Удобный каталог модификаций</li><li>Быстрое восстановление игры</li></ul></div><div style="flex-grow: 1;"></div><div class="app-footer-row"><p class="app-credits">(C) Launcher 2025</p></div></div></div>
             </div>`;
     } catch (error) { contentArea.innerHTML = `<p style="color:#ff5252;">Ошибка авторов.</p>`; }
 }
@@ -402,3 +402,4 @@ async function restoreMod(id, name) {
 
 if(repairCloseBtn) repairCloseBtn.addEventListener('click', () => repairModal.classList.add('hidden'));
 const rb = document.getElementById('global-repair-btn'); if(rb) rb.addEventListener('click', openRepairModal);
+
