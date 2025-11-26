@@ -4,127 +4,207 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LOADER ASTR</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
 <body>
-    <button id="global-repair-btn" class="fab-repair hidden" title="Восстановление">
-        <span class="material-symbols-outlined">healing</span>
-    </button>
 
+    <!-- SPLASH SCREEN -->
     <div id="splash-screen">
-        <div class="loader-container">
-            <div class="status-text">LOADER ASTR | Started<span class="dots"></span></div>
-            <div class="progress-track"><div class="progress-fill"></div></div>
+        <div class="splash-logo">
+            <span class="material-symbols-rounded">download</span>
         </div>
     </div>
 
-    <div class="app-container">
-        <aside class="sidebar glass">
-            <div class="logo-area">
-                <img src="icon.ico" alt="Logo" class="logo-icon-img">
-                <h1>LOADER ASTR</h1>
+    <div class="sidebar">
+        <div class="app-logo">
+            <div class="logo-icon" style="background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);">
+                <span class="material-symbols-rounded">rocket_launch</span>
             </div>
-            <nav class="nav-menu">
-                <button class="nav-item active" data-tab="mods"><span class="material-symbols-outlined">grid_view</span>Каталог</button>
-                <button class="nav-item" data-tab="install-methods"><span class="material-symbols-outlined">settings_applications</span>Методы установки</button>
-                <button class="nav-item" data-tab="authors"><span class="material-symbols-outlined">group</span>Авторы</button>
-                
-                <div style="flex-grow: 1;"></div>
-                
-                <!-- КНОПКА ПРОВЕРКИ ОБНОВЛЕНИЙ -->
-                <button class="nav-item" id="btn-check-updates">
-                    <span class="material-symbols-outlined">update</span>Проверить обновления
+            <div class="app-title">LOADER ASTR</div>
+        </div>
+
+        <div class="nav-menu">
+            <div class="nav-item active" data-target="mods">
+                <span class="material-symbols-rounded">grid_view</span>
+                <span>Моды</span>
+            </div>
+            <div class="nav-item" data-target="settings">
+                <span class="material-symbols-rounded">settings</span>
+                <span>Настройки</span>
+            </div>
+            <div class="nav-item" data-target="about">
+                <span class="material-symbols-rounded">info</span>
+                <span>О программе</span>
+            </div>
+            <!-- Кнопка для теста VPN окна -->
+            <div class="nav-item" id="btn-test-vpn" style="margin-top: auto; color: #f2b8b5; font-size: 0.8rem;">
+                <span class="material-symbols-rounded">vpn_lock</span>
+                <span>Тест VPN</span>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div class="ping-indicator">
+                <div class="dot" id="ping-dot"></div>
+                <span id="ping-text">Проверка...</span>
+            </div>
+            <div id="version-text">v1.0.0</div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div class="page-title" id="page-title">Каталог модов</div>
+            <div class="header-actions">
+                <button class="icon-btn" id="global-repair-btn" title="Починить моды">
+                    <span class="material-symbols-rounded">build</span>
                 </button>
+                <button class="icon-btn" id="btn-check-updates" title="Проверить обновления">
+                    <span class="material-symbols-rounded">sync</span>
+                </button>
+            </div>
+        </div>
 
-                <button class="nav-item" data-tab="settings"><span class="material-symbols-outlined">palette</span>Настройки темы</button>
-            </nav>
-            <div class="sidebar-footer">v 1.0.0 Beta</div>
-        </aside>
+        <div id="content-area">
+            <!-- Dynamic Content -->
+        </div>
+    </div>
 
-        <main class="main-content">
-            <div class="top-bar glass">
-                <h2 id="page-title">Каталог модификаций</h2>
-                <div class="top-bar-actions">
-                    <div class="social-links">
-                        <a href="https://t.me/RHJMODS" target="_blank" class="social-btn telegram-btn"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.176 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
-                        <a href="https://t.me/astrremod" target="_blank" class="social-btn telegram-btn"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.176 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
-                    </div>
-                    <div class="divider-vertical"></div>
-                    <div class="status-indicator">
-                        <div class="status-dot" id="ping-dot"></div>
-                        <span id="ping-text">Подключение...</span>
-                    </div>
+    <!-- INSTALL MODAL (PROGRESS) -->
+    <div id="progress-modal" class="modal-overlay hidden">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Установка...</h3>
+                <button class="close-btn" id="modal-close-btn">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            
+            <div id="install-view">
+                <div class="progress-info">
+                    <span id="modal-status">Подготовка...</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progress-bar"></div>
                 </div>
             </div>
 
-            <div id="content-area" class="content-grid">
-                <div class="loader-spinner"><div class="spinner"></div><p>Загрузка каталога...</p></div>
-            </div>
-        </main>
-    </div>
-
-    <div id="progress-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <button id="modal-close-btn" class="modal-close-icon"><span class="material-symbols-outlined">close</span></button>
-            <div id="install-view">
-                <h3 id="modal-title">Установка...</h3>
-                <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
-                <div class="progress-info-row"><p id="modal-status">Подготовка...</p><span id="progress-percent">0%</span></div>
-            </div>
             <div id="success-view" class="view-hidden">
-                <span class="material-symbols-outlined success-icon">check_circle</span>
+                <span class="material-symbols-rounded success-icon">check_circle</span>
                 <h3>Готово!</h3>
-                <p class="error-text">Успешно установлено</p>
             </div>
+
             <div id="error-view" class="view-hidden">
-                <span class="material-symbols-outlined error-icon">error</span>
+                <span class="material-symbols-rounded" style="font-size: 64px; color: var(--md-sys-color-error); margin: 20px auto; display: block; text-align: center;">error</span>
                 <h3>Ошибка</h3>
-                <p id="error-message" class="error-text">Что-то пошло не так</p>
+                <p class="error-text" id="error-message">...</p>
             </div>
         </div>
     </div>
 
-    <div id="repair-modal" class="modal-overlay hidden">
-        <div class="modal-content repair-content">
-            <button id="repair-close-btn" class="modal-close-icon"><span class="material-symbols-outlined">close</span></button>
-            <h3>Восстановление</h3>
-            <p class="modal-subtitle">Выберите мод для удаления или починки:</p>
-            <div id="repair-list" class="repair-list"></div>
-        </div>
-    </div>
-
+    <!-- INFO MODAL (BUY/PREORDER) -->
     <div id="info-modal" class="modal-overlay hidden">
-        <div class="modal-content info-content">
-            <button id="info-close-btn" class="modal-close-icon"><span class="material-symbols-outlined">close</span></button>
-            <h3 id="info-modal-title">Информация</h3>
-            <div id="info-modal-desc" class="info-body"></div>
-            <button id="info-modal-action" class="modal-action-btn"></button>
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3 class="modal-title" id="info-modal-title">Информация</h3>
+                <button class="close-btn" id="info-close-btn">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Мод:</span>
+                <span class="info-value" id="info-mod-name">...</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Автор:</span>
+                <span class="info-value" id="info-mod-author">Refuzo + ASSTRALLITY</span>
+            </div>
+
+            <div class="info-desc-box" id="info-modal-desc">
+                Описание...
+            </div>
+
+            <div class="price-tag" id="info-price">500 RUB</div>
+
+            <button id="info-modal-action" class="modal-action-btn">
+                Заказать
+            </button>
         </div>
     </div>
 
-    <!-- ОКНО ОБНОВЛЕНИЯ -->
-    <div id="update-modal" class="modal-overlay hidden">
-        <div class="modal-content" style="text-align: left; width: 500px;">
-            <h3 style="margin-bottom: 8px;">Доступно обновление!</h3>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 16px; color: #ccc; font-size: 14px;">
-                <span>Версия: <strong id="update-version" style="color: #fff;"></strong></span>
-                <span>Размер: <strong id="update-size" style="color: #fff;"></strong></span>
+    <!-- REPAIR MODAL -->
+    <div id="repair-modal" class="modal-overlay hidden">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3 class="modal-title">Управление модами</h3>
+                <button class="close-btn" id="repair-close-btn">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
             </div>
-            <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1);">
-                <p style="color: #938f99; font-size: 11px; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; font-weight: 700;">Список изменений</p>
-                <p id="update-changelog" style="color: #e0e0e0; font-size: 14px; line-height: 1.6; white-space: pre-line;"></p>
-            </div>
-            <div style="display: flex; gap: 12px;">
-                <button id="btn-start-update" class="install-btn"><span class="material-symbols-outlined">download</span> Обновить</button>
-                <button id="btn-skip-update" class="install-btn" style="background: transparent; border: 1px solid #444; color: #aaa;">Позже</button>
+            <p style="font-size: 0.9rem; color: var(--md-sys-color-outline);">Нажмите на мод, чтобы удалить его.</p>
+            <div class="repair-list" id="repair-list">
+                <!-- Items -->
             </div>
         </div>
     </div>
-    
-    <!-- TOAST -->
-    <div id="toast-notification" class="toast hidden">У вас последняя версия</div>
+
+    <!-- UPDATE MODAL -->
+    <div id="update-modal" class="modal-overlay hidden">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3 class="modal-title">Доступно обновление!</h3>
+            </div>
+            
+            <div class="update-info">
+                <div class="update-header-row">
+                    <span id="update-version">v1.0.1</span>
+                    <span id="update-size">Размер: ...</span>
+                </div>
+                <div class="changelog-box">
+                    <p style="margin-bottom:4px; font-size:0.8rem; opacity:0.7;">список изменений</p>
+                    <p id="update-changelog" style="margin:0;">...</p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="btn-start-update" class="btn-primary">
+                    <span class="material-symbols-rounded">download</span> Обновить
+                </button>
+                <button id="btn-skip-update" class="btn-secondary">Позже</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VPN ALERT MODAL -->
+    <div id="vpn-modal" class="modal-overlay hidden" style="z-index: 9999;">
+        <div class="modal-window" style="border-color: #f2b8b5; box-shadow: 0 0 50px rgba(242, 184, 181, 0.2);">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span class="material-symbols-rounded" style="font-size: 64px; color: #f2b8b5;">public_off</span>
+            </div>
+            
+            <h3 style="text-align: center; color: #f2b8b5; margin-bottom: 16px;">Доступ ограничен</h3>
+            
+            <p style="text-align: center; font-size: 15px; line-height: 1.6; color: #e6e1e5; margin-bottom: 24px;">
+                Обнаружен <strong>Украинский IP адрес</strong>.<br>
+                Наш сервер (.ru) заблокирован вашим провайдером.
+            </p>
+            
+            <div style="background: rgba(242, 184, 181, 0.1); padding: 16px; border-radius: 12px; border: 1px solid rgba(242, 184, 181, 0.3); margin-bottom: 24px;">
+                <p style="margin: 0; font-size: 14px; color: #f2b8b5; text-align: center;">
+                    Пожалуйста, <strong>включите VPN</strong> (выберите Россию или Европу) и перезапустите лаунчер.
+                </p>
+            </div>
+
+            <button id="btn-vpn-reload" class="modal-action-btn" style="background-color: #f2b8b5; color: #601410;">
+                Перезагрузить
+            </button>
+        </div>
+    </div>
+
+    <div id="toast-notification" class="toast hidden">Сообщение</div>
 
     <script src="script.js"></script>
 </body>
