@@ -269,8 +269,6 @@ function renderMods(mods, installedIds, buyList) {
         if (buyInfo) {
             if (buyInfo.status === 'preorder') {
                 btnText = 'Предзаказ'; btnIcon = 'schedule'; onClickAction = `openInfoModal('preorder', '${mod.id}')`;
-            } else if (buyInfo.status === 'BT') {
-                btnText = 'Находится на тестировании'; btnIcon = 'science'; onClickAction = `openInfoModal('testing', '${mod.id}')`;
             } else {
                 btnText = 'Купить'; btnIcon = 'shopping_cart'; onClickAction = `openInfoModal('paid', '${mod.id}')`;
             }
@@ -298,26 +296,10 @@ function openInfoModal(type, modId) {
     const modItem = globalModsList.find(m => m.id === modId);
     if (!buyItem || !modItem) return;
     infoModal.classList.remove('hidden');
-
-    let statusTitle, btnText, btnIcon, showButton;
-
-    if (type === 'preorder') {
-        statusTitle = 'Предзаказ';
-        btnText = 'ЗАКАЗАТЬ';
-        btnIcon = 'schedule';
-        showButton = true;
-    } else if (type === 'testing') {
-        statusTitle = 'На тестировании';
-        btnText = '';
-        btnIcon = '';
-        showButton = false;
-    } else {
-        statusTitle = 'Платный контент';
-        btnText = 'КУПИТЬ';
-        btnIcon = 'shopping_cart';
-        showButton = true;
-    }
-
+    infoActionBtn.className = 'modal-action-btn'; 
+    let statusTitle = type === 'preorder' ? 'Предзаказ' : 'Платный контент';
+    let btnText = type === 'preorder' ? 'ЗАКАЗАТЬ' : 'КУПИТЬ';
+    let btnIcon = type === 'preorder' ? 'schedule' : 'shopping_cart';
     infoTitle.innerText = statusTitle;
     infoDesc.innerHTML = `
         <div class="info-row"><span class="info-label">Мод:</span><span class="info-value">${modItem.name}</span></div>
@@ -326,14 +308,8 @@ function openInfoModal(type, modId) {
         <p class="info-description">${buyItem.desc || "Описание недоступно."}</p>
         <div class="info-price-tag">${buyItem.price || "Цена договорная"}</div>
     `;
-
-    if (showButton) {
-        infoActionBtn.style.display = 'flex';
-        infoActionBtn.innerHTML = `${btnText} <span class="material-symbols-outlined">${btnIcon}</span>`;
-        infoActionBtn.onclick = () => { if (buyItem.link) window.open(buyItem.link, '_blank'); };
-    } else {
-        infoActionBtn.style.display = 'none';
-    }
+    infoActionBtn.innerHTML = `${btnText} <span class="material-symbols-outlined">${btnIcon}</span>`;
+    infoActionBtn.onclick = () => { if (buyItem.link) window.open(buyItem.link, '_blank'); };
 }
 
 if(infoCloseBtn) infoCloseBtn.addEventListener('click', () => infoModal.classList.add('hidden'));
