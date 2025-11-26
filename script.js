@@ -6,7 +6,6 @@ const REPO_BASE_URL = 'https://rh-archive.ru/mods_files_github/';
 const contentArea = document.getElementById('content-area');
 const navItems = document.querySelectorAll('.nav-item');
 
-// Окна
 const modal = document.getElementById('progress-modal');
 const installView = document.getElementById('install-view');
 const successView = document.getElementById('success-view');
@@ -81,7 +80,7 @@ async function checkForUpdates(manual = false) {
     
     if(manual && btnCheckUpdates) {
         const icon = btnCheckUpdates.querySelector('span');
-        if(icon) icon.style.animation = "spin 1s linear infinite";
+        icon.style.animation = "spin 1s linear infinite";
     }
 
     try {
@@ -89,10 +88,9 @@ async function checkForUpdates(manual = false) {
         
         if (res.available) {
             newUpdateUrl = res.url;
-            if(updateVerSpan) updateVerSpan.innerText = "v" + res.version;
-            if(updateLogP) updateLogP.innerText = res.changelog;
-            if(updateSizeSpan) updateSizeSpan.innerText = res.size || "MB";
-            
+            updateVerSpan.innerText = "v" + res.version;
+            updateLogP.innerText = res.changelog;
+            updateSizeSpan.innerText = res.size || "Неизвестно";
             updateModal.classList.remove('hidden');
         } else {
             if (manual) showToast(res.message || "Обновлений не найдено");
@@ -102,7 +100,7 @@ async function checkForUpdates(manual = false) {
     } finally {
         if(manual && btnCheckUpdates) {
             const icon = btnCheckUpdates.querySelector('span');
-            if(icon) icon.style.animation = "none";
+            icon.style.animation = "none";
         }
     }
 }
@@ -171,12 +169,12 @@ function renderSettings() {
                         <input type="range" min="0" max="360" value="260" class="slider-hue" id="hue-slider">
                         <label style="margin-top:16px;">Пресеты</label>
                         <div class="presets-grid">
-                            <div class="color-preset" style="background: #d0bcff" onclick="setTheme('#d0bcff')"></div>
-                            <div class="color-preset" style="background: #ff4081" onclick="setTheme('#ff4081')"></div>
-                            <div class="color-preset" style="background: #00e676" onclick="setTheme('#00e676')"></div>
-                            <div class="color-preset" style="background: #2979ff" onclick="setTheme('#2979ff')"></div>
-                            <div class="color-preset" style="background: #ffea00" onclick="setTheme('#ffea00')"></div>
-                            <div class="color-preset" style="background: #e040fb" onclick="setTheme('#e040fb')"></div>
+                            <div class="color-preset" style="background: #d0bcff" data-col="#d0bcff"></div>
+                            <div class="color-preset" style="background: #ff4081" data-col="#ff4081"></div>
+                            <div class="color-preset" style="background: #00e676" data-col="#00e676"></div>
+                            <div class="color-preset" style="background: #2979ff" data-col="#2979ff"></div>
+                            <div class="color-preset" style="background: #ffea00" data-col="#ffea00"></div>
+                            <div class="color-preset" style="background: #e040fb" data-col="#e040fb"></div>
                         </div>
                     </div>
                 </div>
@@ -186,18 +184,24 @@ function renderSettings() {
         </div>`;
     const hueSlider = document.getElementById('hue-slider');
     const preview = document.getElementById('color-preview');
+    const presets = document.querySelectorAll('.color-preset');
     if (hueSlider) {
         hueSlider.addEventListener('input', (e) => {
             const hue = e.target.value;
             const color = `hsl(${hue}, 100%, 75%)`; 
-            setTheme(color);
+            applyAccentColor(color);
+            localStorage.setItem('accentColor', color);
+            preview.style.backgroundColor = color;
         });
     }
-}
-
-window.setTheme = function(col) {
-    applyAccentColor(col);
-    localStorage.setItem('accentColor', col);
+    presets.forEach(p => {
+        p.addEventListener('click', () => {
+            const color = p.getAttribute('data-col');
+            applyAccentColor(color);
+            localStorage.setItem('accentColor', color);
+            preview.style.backgroundColor = color;
+        });
+    });
 }
 
 window.resetTheme = function() { applyAccentColor('#d0bcff'); localStorage.removeItem('accentColor'); renderSettings(); }
@@ -229,12 +233,12 @@ function handleTabChange(tab) {
 }
 
 async function loadMods() {
-    contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div><p>Загрузка каталога...</p></div>`;
     try {
         const [modsResp, buyResp] = await Promise.all([
-            fetch(REPO_JSON_URL),
+            fetch(REPO_JSON_URL).catch(e => null),
             fetch(REPO_BUY_URL).catch(() => ({ json: () => [] }))
         ]);
+        if (!modsResp || !modsResp.ok) throw new Error("Не удалось загрузить каталог");
         globalModsList = await modsResp.json(); 
         globalBuyList = await buyResp.json();
         globalInstalledIds = [];
@@ -243,7 +247,7 @@ async function loadMods() {
         }
         renderMods(globalModsList, globalInstalledIds, globalBuyList);
     } catch (e) { 
-        contentArea.innerHTML = `<div class="empty-state"><p style="color:#ff5252">Ошибка загрузки: ${e.message}</p></div>`; 
+        contentArea.innerHTML = `<div class="empty-state"><p>Ошибка загрузки: ${e.message}</p></div>`; 
     } finally {
         setTimeout(() => { if(splash) splash.classList.add('fade-out'); }, 500);
     }
@@ -262,7 +266,6 @@ function renderMods(mods, installedIds, buyList) {
         let btnClass = 'install-btn';
         let isDisabled = false;
         let onClickAction = `startInstallProcess('${mod.id}', '${mod.name}', '${mod.file}')`;
-
         if (buyInfo) {
             if (buyInfo.status === 'preorder') {
                 btnText = 'Предзаказ'; btnIcon = 'schedule'; onClickAction = `openInfoModal('preorder', '${mod.id}')`;
@@ -270,10 +273,9 @@ function renderMods(mods, installedIds, buyList) {
                 btnText = 'Купить'; btnIcon = 'shopping_cart'; onClickAction = `openInfoModal('paid', '${mod.id}')`;
             }
         } else {
-            if (!window.pywebview) { btnText = 'Доступно в приложении'; isDisabled = true; }
+            if (!window.pywebview) { btnText = 'Доступно в приложении'; isDisabled = true; } 
             else if (isInst) { btnText = 'Уже установлен'; btnIcon = 'check'; btnClass = 'install-btn installed'; isDisabled = true; }
         }
-
         const card = document.createElement('div'); card.className = 'mod-card';
         card.innerHTML = `
             <img src="${img}" class="card-image" loading="lazy">
