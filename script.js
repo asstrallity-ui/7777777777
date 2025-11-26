@@ -209,7 +209,7 @@ window.resetTheme = function() { applyAccentColor('#d0bcff'); localStorage.remov
 function checkEnvironment() {
     const repairBtn = document.getElementById('global-repair-btn');
     if (window.pywebview && repairBtn) repairBtn.classList.remove('hidden');
-    checkForUpdates(false); checkGeoRestriction(); 
+    checkForUpdates(false); 
 }
 
 navItems.forEach(item => {
@@ -269,6 +269,8 @@ function renderMods(mods, installedIds, buyList) {
         if (buyInfo) {
             if (buyInfo.status === 'preorder') {
                 btnText = 'Предзаказ'; btnIcon = 'schedule'; onClickAction = `openInfoModal('preorder', '${mod.id}')`;
+            } else if (buyInfo.status === 'BT') {
+                btnText = 'Находится на тестировании'; btnIcon = 'science'; onClickAction = `openInfoModal('testing', '${mod.id}')`;
             } else {
                 btnText = 'Купить'; btnIcon = 'shopping_cart'; onClickAction = `openInfoModal('paid', '${mod.id}')`;
             }
@@ -296,10 +298,26 @@ function openInfoModal(type, modId) {
     const modItem = globalModsList.find(m => m.id === modId);
     if (!buyItem || !modItem) return;
     infoModal.classList.remove('hidden');
-    infoActionBtn.className = 'modal-action-btn'; 
-    let statusTitle = type === 'preorder' ? 'Предзаказ' : 'Платный контент';
-    let btnText = type === 'preorder' ? 'ЗАКАЗАТЬ' : 'КУПИТЬ';
-    let btnIcon = type === 'preorder' ? 'schedule' : 'shopping_cart';
+
+    let statusTitle, btnText, btnIcon, showButton;
+
+    if (type === 'preorder') {
+        statusTitle = 'Предзаказ';
+        btnText = 'ЗАКАЗАТЬ';
+        btnIcon = 'schedule';
+        showButton = true;
+    } else if (type === 'testing') {
+        statusTitle = 'На тестировании';
+        btnText = '';
+        btnIcon = '';
+        showButton = false;
+    } else {
+        statusTitle = 'Платный контент';
+        btnText = 'КУПИТЬ';
+        btnIcon = 'shopping_cart';
+        showButton = true;
+    }
+
     infoTitle.innerText = statusTitle;
     infoDesc.innerHTML = `
         <div class="info-row"><span class="info-label">Мод:</span><span class="info-value">${modItem.name}</span></div>
@@ -308,8 +326,14 @@ function openInfoModal(type, modId) {
         <p class="info-description">${buyItem.desc || "Описание недоступно."}</p>
         <div class="info-price-tag">${buyItem.price || "Цена договорная"}</div>
     `;
-    infoActionBtn.innerHTML = `${btnText} <span class="material-symbols-outlined">${btnIcon}</span>`;
-    infoActionBtn.onclick = () => { if (buyItem.link) window.open(buyItem.link, '_blank'); };
+
+    if (showButton) {
+        infoActionBtn.style.display = 'flex';
+        infoActionBtn.innerHTML = `${btnText} <span class="material-symbols-outlined">${btnIcon}</span>`;
+        infoActionBtn.onclick = () => { if (buyItem.link) window.open(buyItem.link, '_blank'); };
+    } else {
+        infoActionBtn.style.display = 'none';
+    }
 }
 
 if(infoCloseBtn) infoCloseBtn.addEventListener('click', () => infoModal.classList.add('hidden'));
@@ -402,36 +426,3 @@ async function restoreMod(id, name) {
 
 if(repairCloseBtn) repairCloseBtn.addEventListener('click', () => repairModal.classList.add('hidden'));
 const rb = document.getElementById('global-repair-btn'); if(rb) rb.addEventListener('click', openRepairModal);
-
-
-// --- GEO RESTRICTION LOGIC ---
-const geoModal = document.getElementById('geo-modal');
-const geoExitBtn = document.getElementById('geo-exit-btn');
-
-async function checkGeoRestriction() {
-    if (!window.pywebview || !window.pywebview.api || !window.pywebview.api.check_connection_status) {
-        return;
-    }
-    try {
-        const res = await window.pywebview.api.check_connection_status();
-        // { status: "blocked", country: "UA" }
-        if (res && res.status === 'blocked') {
-            if (geoModal) {
-                geoModal.classList.remove('hidden');
-            }
-        }
-    } catch (e) {
-        console.warn('Geo check failed', e);
-    }
-}
-
-if (geoExitBtn) {
-    geoExitBtn.addEventListener('click', () => {
-        if (window.pywebview && window.pywebview.api && window.pywebview.api.close) {
-            window.pywebview.api.close();
-        } else if (geoModal) {
-            // Fallback if API fails (for testing)
-            geoModal.classList.add('hidden');
-        }
-    });
-}
