@@ -1,3 +1,4 @@
+
 :root {
     --md-sys-color-background: #101010;
     --md-sys-color-surface: #1e1e1e;
@@ -218,6 +219,3 @@ input:checked + .slider:before { transform: translateX(20px); background-color: 
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--md-sys-color-outline); animation: popIn 0.5s ease-out; }
 .empty-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; color: var(--md-sys-color-primary); }
 @keyframes spin { 100% { transform: rotate(360deg); } }
-
-.toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background-color: #333; color: #fff; padding: 12px 24px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 3000; font-size: 14px; opacity: 1; transition: opacity 0.3s, transform 0.3s; border: 1px solid rgba(255,255,255,0.1); }
-.toast.hidden { opacity: 0; transform: translate(-50%, 20px); pointer-events: none; }
