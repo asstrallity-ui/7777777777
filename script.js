@@ -6,6 +6,8 @@ const REPO_BASE_URL = 'https://rh-archive.ru/mods_files_github/';
 // === ЭЛЕМЕНТЫ ИНТЕРФЕЙСА ===
 const contentArea = document.getElementById('content-area');
 const navItems = document.querySelectorAll('.nav-item');
+// !! ВАЖНО: Элемент загрузочного экрана
+const splashScreen = document.getElementById('splash-screen');
 
 // Модальное окно установки
 const modal = document.getElementById('progress-modal');
@@ -14,8 +16,8 @@ const successView = document.getElementById('success-view');
 const errorView = document.getElementById('error-view');
 const errorMessage = document.getElementById('error-message');
 const progressBar = document.getElementById('progress-bar');
-const progressPercent = document.getElementById('progress-percent'); // Сюда пишем MB
-const modalStatus = document.getElementById('modal-status');       // Сюда пишем статус
+const progressPercent = document.getElementById('progress-percent'); 
+const modalStatus = document.getElementById('modal-status');       
 const modalTitle = document.getElementById('modal-title');
 const modalCloseBtn = document.getElementById('modal-close-btn');
 
@@ -24,56 +26,49 @@ const repairModal = document.getElementById('repair-modal');
 const repairList = document.getElementById('repair-list');
 const repairCloseBtn = document.getElementById('repair-close-btn');
 
-// Модальное окно обновлений лаунчера
-const updateModal = document.getElementById('update-modal'); // Если есть в HTML
+// Модальное окно обновлений
+const updateModal = document.getElementById('update-modal');
 const btnCheckUpdates = document.getElementById('btn-check-updates');
 
 // Глобальные переменные
 let currentInstallMethod = 'auto';
 let globalModsList = [];
 let globalBuyList = [];
-let globalInstalledIds = []; // Список ID установленных модов
+let globalInstalledIds = []; 
 
 // === ИНИЦИАЛИЗАЦИЯ ===
 document.addEventListener('DOMContentLoaded', () => {
-    // Восстановление темы
     const savedColor = localStorage.getItem('accentColor');
     if (savedColor) applyAccentColor(savedColor);
-    else applyAccentColor('#d0bcff'); // Дефолтный лиловый
+    else applyAccentColor('#d0bcff'); 
 
     // Ожидание PyWebview
     let attempts = 0;
     const interval = setInterval(() => {
         attempts++;
+        // Ждем либо появления pywebview, либо 2 секунды (50*40ms), чтобы не висеть вечно
         if (window.pywebview || attempts > 50) {
+            clearInterval(interval);
             checkEnvironment();
-            loadMods(); // Загрузка списка модов
-            if (window.pywebview) clearInterval(interval);
+            loadMods(); // Запуск загрузки
         }
-    }, 100);
+    }, 40);
 
-    // Пинг сервера
     checkPing();
     setInterval(checkPing, 10000);
-    
-    // Навигация
     setupNavigation();
     
-    // Кнопка обновлений
     if(btnCheckUpdates) {
         btnCheckUpdates.addEventListener('click', checkForUpdates);
     }
 });
 
-// === ПРОВЕРКА ОКРУЖЕНИЯ ===
 function checkEnvironment() {
     if (window.pywebview) {
         document.body.classList.add('desktop-mode');
-        console.log("Desktop mode activated");
     }
 }
 
-// === ПИНГ СЕРВЕРА ===
 async function checkPing() {
     const pingText = document.getElementById('ping-text');
     const pingDot = document.getElementById('ping-dot');
@@ -81,16 +76,14 @@ async function checkPing() {
 
     const start = Date.now();
     try {
-        // Head запрос для проверки отклика
         await fetch(REPO_JSON_URL + '?t=' + start, { method: 'HEAD', cache: 'no-store' });
         const end = Date.now();
         const ping = end - start;
 
         pingText.innerText = `Соединено: ${ping} ms`;
-        // Цветовая индикация
-        let color = '#4caf50'; // Green
-        if (ping > 150) color = '#ff9800'; // Orange
-        if (ping > 300) color = '#f44336'; // Red
+        let color = '#4caf50'; 
+        if (ping > 150) color = '#ff9800'; 
+        if (ping > 300) color = '#f44336'; 
         
         pingDot.style.backgroundColor = color;
         pingDot.style.boxShadow = `0 0 8px ${color}`;
@@ -104,31 +97,28 @@ async function checkPing() {
 // === ЗАГРУЗКА КОНТЕНТА ===
 async function loadMods() {
     try {
-        contentArea.innerHTML = '<div class="loader"></div>';
+        // contentArea.innerHTML = '<div class="loader"></div>'; // Не показываем лоадер, если висит сплэш
         
-        // Параллельная загрузка всех JSON
-        const [modsRes, buyRes, authorsRes] = await Promise.all([
+        const [modsRes, buyRes] = await Promise.all([
             fetch(REPO_JSON_URL, {cache: "no-store"}),
-            fetch(REPO_BUY_URL, {cache: "no-store"}),
-            fetch(REPO_AUTHORS_URL, {cache: "no-store"})
+            fetch(REPO_BUY_URL, {cache: "no-store"})
         ]);
 
-        if(!modsRes.ok) throw new Error("Ошибка доступа к списку модов");
+        if(!modsRes.ok) throw new Error("Ошибка сервера");
 
         globalModsList = await modsRes.json();
         globalBuyList = await buyRes.json();
-        // const authors = await authorsRes.json(); // Пока не используем, но скачали
 
-        // Если мы в приложении, спрашиваем у Python, что установлено
         if (window.pywebview) {
             try {
                 globalInstalledIds = await window.pywebview.api.check_installed_mods(globalModsList);
             } catch(err) {
-                console.error("Ошибка проверки установленных модов:", err);
+                console.error("Ошибка проверки:", err);
             }
         }
 
         renderMods(globalModsList, globalBuyList);
+
     } catch (e) {
         contentArea.innerHTML = `
             <div class="error-container">
@@ -136,27 +126,33 @@ async function loadMods() {
                 <p>${e.message}</p>
                 <button onclick="loadMods()" class="retry-btn">Повторить</button>
             </div>`;
+    } finally {
+        // === ИСПРАВЛЕНИЕ: СКРЫВАЕМ SPLASH SCREEN ===
+        if(splashScreen) {
+            splashScreen.style.transition = "opacity 0.5s ease";
+            splashScreen.style.opacity = "0";
+            setTimeout(() => {
+                splashScreen.style.display = "none";
+            }, 500);
+        }
     }
 }
 
-// === ОТРИСОВКА МОДОВ ===
 function renderMods(mods, buyList) {
     contentArea.innerHTML = '';
     
-    if (mods.length === 0) {
+    if (!mods || mods.length === 0) {
         contentArea.innerHTML = '<p class="empty-msg">Список модов пуст.</p>';
         return;
     }
 
     mods.forEach(mod => {
-        // Обработка картинки (если относительный путь)
         let img = mod.image || "";
         if(img && !img.startsWith('http')) {
             img = REPO_BASE_URL + img;
         }
-        if(!img) img = "assets/no-image.png"; // Заглушка
+        if(!img) img = "assets/no-image.png";
 
-        // Статусы
         const isInst = globalInstalledIds.includes(mod.id);
         const buyInfo = buyList.find(b => b.id === mod.id);
         
@@ -164,12 +160,9 @@ function renderMods(mods, buyList) {
         let btnIcon = 'download';
         let btnClass = 'install-btn';
         let isDisabled = false;
-        // Генерируем вызов функции установки
-        // Важно: экранируем кавычки
         let onClickAction = `startInstallProcess('${mod.id}', '${mod.name.replace(/'/g, "\\'")}', '${mod.file}')`;
 
         if (buyInfo) {
-            // Логика для платных модов
             if (buyInfo.status === 'preorder') {
                 btnText = 'Предзаказ';
                 btnIcon = 'schedule';
@@ -181,7 +174,6 @@ function renderMods(mods, buyList) {
             }
             btnClass += ' premium-btn';
         } else {
-            // Логика для бесплатных
             if (!window.pywebview) {
                 btnText = 'Доступно в приложении';
                 isDisabled = true;
@@ -189,13 +181,12 @@ function renderMods(mods, buyList) {
                 btnText = 'Установлено';
                 btnIcon = 'check';
                 btnClass = 'install-btn installed';
-                isDisabled = true; // Блокируем кнопку, если установлено
+                isDisabled = true;
             }
         }
 
         const card = document.createElement('div');
         card.className = 'mod-card';
-        // HTML карточки
         card.innerHTML = `
             <div class="card-image" style="background-image: url('${img}')"></div>
             <div class="card-content">
@@ -211,12 +202,9 @@ function renderMods(mods, buyList) {
     });
 }
 
-// === ЛОГИКА УСТАНОВКИ (Взаимодействие с Python) ===
-
 function startInstallProcess(id, name, url) {
     if(!window.pywebview) return;
 
-    // Сброс UI модального окна
     installView.classList.remove('view-hidden');
     successView.classList.add('view-hidden');
     errorView.classList.add('view-hidden');
@@ -227,19 +215,12 @@ function startInstallProcess(id, name, url) {
     modalStatus.innerText = "Подготовка к загрузке...";
     
     modal.classList.remove('hidden');
-
-    // Вызываем Python
-    // url передаем как есть, Python сам склеит с базовым URL если надо
     window.pywebview.api.install_mod(id, url, currentInstallMethod);
 }
 
-// Кнопка отмены
 if(modalCloseBtn) {
     modalCloseBtn.addEventListener('click', () => {
-        if(window.pywebview) {
-            // Сообщаем Python об отмене
-            window.pywebview.api.cancel_install();
-        }
+        if(window.pywebview) window.pywebview.api.cancel_install();
         closeModal();
     });
 }
@@ -248,41 +229,20 @@ function closeModal() {
     modal.classList.add('hidden');
 }
 
-// === API METHODS (Вызываются из Python) ===
-
-/**
- * Обновляет прогресс-бар
- * @param {number} p - Процент (0-100)
- * @param {string} t - Текст статуса (например "Скачивание: 10/50 MB")
- * @param {string} label - (Опционально) Текст лейбла, например "12.5 MB"
- */
+// === API METHODS ===
 window.updateRealProgress = (p, t, label) => {
-    if (progressBar) {
-        progressBar.style.width = p + "%";
-    }
-    if (progressPercent) {
-        // Если передан лейбл (размер), показываем его. Иначе проценты.
-        progressPercent.innerText = label ? label : (p + "%");
-    }
-    if (modalStatus) {
-        modalStatus.innerText = t;
-    }
+    if (progressBar) progressBar.style.width = p + "%";
+    if (progressPercent) progressPercent.innerText = label ? label : (p + "%");
+    if (modalStatus) modalStatus.innerText = t;
 }
 
-/**
- * Завершение установки
- * @param {boolean} success 
- * @param {string} message 
- */
 window.finishInstall = (success, message) => {
     if(success) {
         installView.classList.add('view-hidden');
         successView.classList.remove('view-hidden');
-        
-        // Автоматически закрываем и обновляем список
         setTimeout(() => {
             closeModal();
-            loadMods(); // ВАЖНО: Перезагружаем список, чтобы обновились галочки
+            loadMods(); 
         }, 2000);
     } else {
         if(message === "Canceled" || message === "Отменено пользователем"){
@@ -291,17 +251,14 @@ window.finishInstall = (success, message) => {
             installView.classList.add('view-hidden');
             errorView.classList.remove('view-hidden');
             errorMessage.innerText = message;
-            // Даем прочитать ошибку 3 секунды
             setTimeout(closeModal, 4000);
         }
     }
 }
 
-// === ОБНОВЛЕНИЕ ЛАУНЧЕРА ===
-
 async function checkForUpdates() {
     const icon = document.querySelector('#btn-check-updates .material-icons');
-    if(icon) icon.classList.add('spin'); // Анимация вращения
+    if(icon) icon.classList.add('spin');
 
     try {
         if(window.pywebview) {
@@ -309,17 +266,12 @@ async function checkForUpdates() {
             if(icon) icon.classList.remove('spin');
 
             if(res.available) {
-                // Показываем окно обновления (если оно сверстано в HTML)
-                // Для простоты используем alert или confirm, если нет модалки
-                // Но у вас в ТЗ была модалка #update-modal
                 if(updateModal) {
                     document.getElementById('update-ver').innerText = res.version;
                     document.getElementById('update-size').innerText = res.size;
                     document.getElementById('update-desc').innerText = res.changelog;
                     
-                    // Кнопка "Обновить" внутри модалки
                     const btnDoUpdate = document.getElementById('btn-perform-update');
-                    // Удаляем старые листенеры (клонированием)
                     const newBtn = btnDoUpdate.cloneNode(true);
                     btnDoUpdate.parentNode.replaceChild(newBtn, btnDoUpdate);
                     
@@ -343,7 +295,6 @@ async function checkForUpdates() {
     }
 }
 
-// Простой Toast (всплывашка)
 function showToast(msg) {
     const toast = document.createElement('div');
     toast.className = 'toast';
@@ -356,21 +307,11 @@ function showToast(msg) {
     }, 3000);
 }
 
-
-// === ЦВЕТОВАЯ СХЕМА И НАСТРОЙКИ ===
-
 function applyAccentColor(color) {
-    // Сохраняем
     localStorage.setItem('accentColor', color);
-    
-    // Применяем CSS переменные
     document.documentElement.style.setProperty('--md-sys-color-primary', color);
-    
-    // Генерируем RGB для полупрозрачности
     const rgb = hexToRgb(color);
-    if(rgb) {
-        document.documentElement.style.setProperty('--md-sys-color-primary-rgb', rgb);
-    }
+    if(rgb) document.documentElement.style.setProperty('--md-sys-color-primary-rgb', rgb);
 }
 
 function hexToRgb(hex) {
@@ -383,7 +324,6 @@ function hexToRgb(hex) {
     return `${r}, ${g}, ${b}`;
 }
 
-// Рендер страницы настроек (вызывается из навбара)
 function renderSettings() {
     contentArea.innerHTML = `
         <h2>Настройки</h2>
@@ -400,15 +340,12 @@ function renderSettings() {
             <button class="install-btn secondary" id="global-repair-btn">Восстановить клиент</button>
         </div>
     `;
-    
-    // Привязка кнопки починки
     setTimeout(() => {
         const rb = document.getElementById('global-repair-btn');
         if(rb) rb.addEventListener('click', openRepairModal);
     }, 100);
 }
 
-// === НАВИГАЦИЯ ===
 function setupNavigation() {
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
@@ -418,17 +355,12 @@ function setupNavigation() {
             const target = e.currentTarget.getAttribute('data-target');
             if(target === 'mods') loadMods();
             else if(target === 'settings') renderSettings();
-            // Для других вкладок можно добавить свои обработчики
         });
     });
 }
 
-// === ВОССТАНОВЛЕНИЕ (REPAIR) ===
 function openRepairModal() {
-    // Показываем список установленных модов
     repairList.innerHTML = '';
-    
-    // Фильтруем глобальный список по установленным ID
     const installedMods = globalModsList.filter(m => globalInstalledIds.includes(m.id));
 
     if (installedMods.length === 0) {
@@ -437,10 +369,7 @@ function openRepairModal() {
         installedMods.forEach(mod => {
             const item = document.createElement('div');
             item.className = 'repair-item';
-            item.innerHTML = `
-                <span>${mod.name}</span>
-                <button onclick="restoreMod('${mod.id}')">Сбросить</button>
-            `;
+            item.innerHTML = `<span>${mod.name}</span> <button onclick="restoreMod('${mod.id}')">Сбросить</button>`;
             repairList.appendChild(item);
         });
     }
@@ -451,7 +380,6 @@ async function restoreMod(id) {
     if(!window.pywebview) return;
     repairModal.classList.add('hidden');
     
-    // Используем то же окно прогресса
     installView.classList.remove('view-hidden');
     modal.classList.remove('hidden');
     modalTitle.innerText = "Восстановление...";
