@@ -1,4 +1,6 @@
-// Ссылки для картинок оставляем, картинки браузер грузит нормально (обычно)
+const REPO_JSON_URL = 'https://rh-archive.ru/mods_files_github/mods.json';
+const REPO_AUTHORS_URL = 'https://rh-archive.ru/mods_files_github/authors.json';
+const REPO_BUY_URL = 'https://rh-archive.ru/mods_files_github/buy.json'; 
 const REPO_BASE_URL = 'https://rh-archive.ru/mods_files_github/';
 
 const contentArea = document.getElementById('content-area');
@@ -48,17 +50,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedColor = localStorage.getItem('accentColor');
     if (savedColor) applyAccentColor(savedColor); else applyAccentColor('#d0bcff');
     
-    // Ждем инициализации Python
     let attempts = 0;
     const interval = setInterval(() => {
         attempts++;
-        // Ждем pywebviewready или просто наличие объекта
         if (window.pywebview || attempts > 50) {
             checkEnvironment();
             loadMods(); 
             if (window.pywebview) clearInterval(interval);
         }
     }, 100);
+    
+    checkPing(); 
+    setInterval(checkPing, 5000);
 });
 
 window.addEventListener('pywebviewready', checkEnvironment);
@@ -72,7 +75,7 @@ function showToast(msg) {
 
 async function checkForUpdates(manual = false) {
     if (!window.pywebview) {
-        if(manual) showToast("Доступно только в EXE версии");
+        if(manual) showToast("Доступно только в приложении");
         return;
     }
     
@@ -92,10 +95,10 @@ async function checkForUpdates(manual = false) {
             
             updateModal.classList.remove('hidden');
         } else {
-            if (manual) showToast(res.message || "Обновлений нет");
+            if (manual) showToast(res.message || "Обновлений не найдено");
         }
     } catch (e) {
-        if (manual) showToast("Ошибка связи с сервером");
+        if (manual) showToast("Ошибка проверки");
         console.error(e);
     } finally {
         if(manual && btnCheckUpdates) {
@@ -109,7 +112,7 @@ if (btnCheckUpdates) btnCheckUpdates.addEventListener('click', () => checkForUpd
 
 if (btnStartUpdate) {
     btnStartUpdate.addEventListener('click', () => {
-        btnStartUpdate.innerHTML = 'Скачивание...';
+        btnStartUpdate.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px;"></span> Скачивание...';
         btnStartUpdate.disabled = true;
         btnSkipUpdate.style.display = 'none';
         window.pywebview.api.perform_update(newUpdateUrl);
@@ -120,37 +123,73 @@ if (btnSkipUpdate) btnSkipUpdate.addEventListener('click', () => updateModal.cla
 
 function applyAccentColor(color) {
     document.documentElement.style.setProperty('--md-sys-color-primary', color);
-    // Упрощенная конвертация для примера, лучше использовать hexToRgb
     document.documentElement.style.setProperty('--md-sys-color-on-primary', '#1e1e1e');
 }
 
 function renderSettings() {
+    let col = getComputedStyle(document.documentElement).getPropertyValue('--md-sys-color-primary').trim();
     contentArea.innerHTML = `
         <div class="full-height-container">
             <div class="big-panel grow-panel">
                 <h2 class="panel-title">Персонализация</h2>
-                <p style="color:#aaa; margin-bottom:20px;">Выберите цвет интерфейса:</p>
-                <div class="presets-grid">
-                    <div class="color-preset" style="background: #d0bcff" onclick="setTheme('#d0bcff')"></div>
-                    <div class="color-preset" style="background: #ff4081" onclick="setTheme('#ff4081')"></div>
-                    <div class="color-preset" style="background: #00e676" onclick="setTheme('#00e676')"></div>
-                    <div class="color-preset" style="background: #2979ff" onclick="setTheme('#2979ff')"></div>
-                    <div class="color-preset" style="background: #ffea00" onclick="setTheme('#ffea00')"></div>
+                <div class="custom-color-picker">
+                    <div class="picker-header">
+                        <div class="current-color-preview" id="color-preview" style="background-color: ${col};"></div>
+                        <div class="picker-info"><h3>Акцентный цвет</h3><p>Выберите основной цвет интерфейса</p></div>
+                    </div>
+                    <div class="picker-controls">
+                        <label>Оттенок</label>
+                        <input type="range" min="0" max="360" value="260" class="slider-hue" id="hue-slider">
+                        <label style="margin-top:16px;">Пресеты</label>
+                        <div class="presets-grid">
+                            <div class="color-preset" style="background: #d0bcff" onclick="setTheme('#d0bcff')"></div>
+                            <div class="color-preset" style="background: #ff4081" onclick="setTheme('#ff4081')"></div>
+                            <div class="color-preset" style="background: #00e676" onclick="setTheme('#00e676')"></div>
+                            <div class="color-preset" style="background: #2979ff" onclick="setTheme('#2979ff')"></div>
+                            <div class="color-preset" style="background: #ffea00" onclick="setTheme('#ffea00')"></div>
+                            <div class="color-preset" style="background: #e040fb" onclick="setTheme('#e040fb')"></div>
+                        </div>
+                    </div>
                 </div>
                 <div class="divider" style="margin: 24px 0;"></div>
-                <button class="reset-theme-btn" onclick="setTheme('#d0bcff')">Сбросить</button>
+                <button class="reset-theme-btn" onclick="setTheme('#d0bcff')"><span class="material-symbols-outlined">restart_alt</span> Сбросить тему</button>
             </div>
         </div>`;
+    
+    const hueSlider = document.getElementById('hue-slider');
+    const preview = document.getElementById('color-preview');
+    
+    if (hueSlider) {
+        hueSlider.addEventListener('input', (e) => {
+            const hue = e.target.value;
+            const color = `hsl(${hue}, 100%, 75%)`; 
+            setTheme(color);
+        });
+    }
 }
+
 window.setTheme = function(col) {
+    // Конвертация HSL в RGB через браузер
+    const div = document.createElement('div');
+    div.style.color = col;
+    document.body.appendChild(div);
+    const computed = window.getComputedStyle(div).color; 
+    document.body.removeChild(div);
+    
     applyAccentColor(col);
+    
+    // Обновляем превью если мы в настройках
+    const preview = document.getElementById('color-preview');
+    if(preview) preview.style.backgroundColor = col;
+    
+    // Сохраняем HSL/Hex в localStorage
     localStorage.setItem('accentColor', col);
 }
 
 function checkEnvironment() {
     const repairBtn = document.getElementById('global-repair-btn');
     if (window.pywebview && repairBtn) repairBtn.classList.remove('hidden');
-    checkForUpdates(false); // Тихая проверка при старте
+    checkForUpdates(false); 
 }
 
 navItems.forEach(item => {
@@ -173,30 +212,69 @@ function handleTabChange(tab) {
     }, 250);
 }
 
-// --- ГЛАВНАЯ ФУНКЦИЯ ЗАГРУЗКИ (ЧЕРЕЗ PYTHON) ---
+async function checkPing() {
+    const pingText = document.getElementById('ping-text');
+    const pingDot = document.getElementById('ping-dot');
+    if (!pingText || !pingDot) return;
+    
+    // Пинг делаем обычным fetch, так как это HEAD запрос и он не так критичен
+    // Если заблочит - покажет "Нет сети", но загрузка модов через Python сработает
+    const start = Date.now();
+    try {
+        await fetch(REPO_JSON_URL + '?t=' + start, { method: 'HEAD', cache: 'no-store' });
+        const end = Date.now();
+        const ping = end - start;
+        pingText.innerText = `Соединено: ${ping} ms`;
+        pingDot.style.backgroundColor = ping < 150 ? '#4caf50' : (ping < 300 ? '#ff9800' : '#f44336');
+        pingDot.style.boxShadow = `0 0 8px ${pingDot.style.backgroundColor}`;
+    } catch (e) {
+        pingText.innerText = 'Нет сети';
+        pingDot.style.backgroundColor = '#f44336';
+        pingDot.style.boxShadow = 'none';
+    }
+}
+
+// --- ГЛАВНАЯ ФУНКЦИЯ ЗАГРУЗКИ (С ИСПРАВЛЕНИЕМ CORS) ---
 async function loadMods() {
     contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div><p>Загрузка каталога...</p></div>`;
     
-    if (!window.pywebview) {
-        // Если открыто просто в браузере для теста
-        contentArea.innerHTML = "<p class='empty-text'>Режим браузера: Нет связи с Python</p>";
-        // Тут можно оставить старый fetch для отладки, но для продакшена лучше так:
-        return; 
-    }
-
     try {
-        // ЗАПРОС К PYTHON (ОБХОД CORS)
-        const response = await window.pywebview.api.get_mods_data();
-        
-        if (!response.success) throw new Error(response.error);
+        let modsData = [];
+        let buyData = [];
 
-        globalModsList = response.mods; 
-        globalBuyList = response.buy;
+        if (window.pywebview) {
+            // ЗАГРУЗКА ЧЕРЕЗ PYTHON (ОБХОД БЛОКИРОВОК)
+            console.log("JS: Запрос списка модов через Python...");
+            
+            // Параллельный запрос
+            const [modsResp, buyResp] = await Promise.all([
+                window.pywebview.api.fetch_data_bypass(REPO_JSON_URL),
+                window.pywebview.api.fetch_data_bypass(REPO_BUY_URL)
+            ]);
+
+            if (!modsResp) throw new Error("Не удалось получить данные от Python");
+            
+            modsData = modsResp;
+            buyData = buyResp || [];
+
+        } else {
+            // Fallback для браузера (если кто-то открыл сайт)
+            const [m, b] = await Promise.all([
+                fetch(REPO_JSON_URL),
+                fetch(REPO_BUY_URL).catch(() => ({ json: () => [] }))
+            ]);
+            if(!m.ok) throw new Error("Ошибка сети (fetch)");
+            modsData = await m.json();
+            buyData = await b.json();
+        }
+
+        globalModsList = modsData; 
+        globalBuyList = buyData;
         globalInstalledIds = [];
 
-        try { 
-            globalInstalledIds = await window.pywebview.api.check_installed_mods(globalModsList); 
-        } catch (e) {}
+        if (window.pywebview) {
+            try { globalInstalledIds = await window.pywebview.api.check_installed_mods(globalModsList); } catch (e) {}
+        }
 
         renderMods(globalModsList, globalInstalledIds, globalBuyList);
     } catch (e) { 
@@ -226,8 +304,9 @@ function renderMods(mods, installedIds, buyList) {
             } else {
                 btnText = 'Купить'; btnIcon = 'shopping_cart'; onClickAction = `openInfoModal('paid', '${mod.id}')`;
             }
-        } else if (isInst) { 
-            btnText = 'Уже установлен'; btnIcon = 'check'; btnClass = 'install-btn installed'; isDisabled = true; 
+        } else {
+            if (!window.pywebview) { btnText = 'Доступно в приложении'; isDisabled = true; }
+            else if (isInst) { btnText = 'Уже установлен'; btnIcon = 'check'; btnClass = 'install-btn installed'; isDisabled = true; }
         }
 
         const card = document.createElement('div'); card.className = 'mod-card';
@@ -253,6 +332,7 @@ function openInfoModal(type, modId) {
     infoActionBtn.className = 'modal-action-btn'; 
     infoTitle.innerText = type === 'preorder' ? 'Предзаказ' : 'Платный контент';
     let btnText = type === 'preorder' ? 'ЗАКАЗАТЬ' : 'КУПИТЬ';
+    let btnIcon = type === 'preorder' ? 'schedule' : 'shopping_cart';
     
     infoDesc.innerHTML = `
         <div class="info-row"><span class="info-label">Мод:</span><span class="info-value">${modItem.name}</span></div>
@@ -261,7 +341,7 @@ function openInfoModal(type, modId) {
         <p class="info-description">${buyItem.desc || "Описание недоступно."}</p>
         <div class="info-price-tag">${buyItem.price || "Цена договорная"}</div>
     `;
-    infoActionBtn.innerHTML = `${btnText} <span class="material-symbols-outlined">telegram</span>`;
+    infoActionBtn.innerHTML = `${btnText} <span class="material-symbols-outlined">${btnIcon}</span>`;
     infoActionBtn.onclick = () => { if (buyItem.link) window.open(buyItem.link, '_blank'); };
 }
 
@@ -270,22 +350,36 @@ if(infoCloseBtn) infoCloseBtn.addEventListener('click', () => infoModal.classLis
 function renderInstallMethods() {
     contentArea.innerHTML = `
         <div class="full-height-container">
-            <div class="big-panel grow-panel"><h2 class="panel-title">Методы установки</h2>
-            <p style="color:#aaa;">Функционал переключателей методов установки...</p>
+            <div class="methods-grid">
+                <div class="method-card-new ${currentInstallMethod === 'auto' ? 'active-method' : ''}" id="card-auto"><div class="method-icon"><span class="material-symbols-outlined">smart_toy</span></div><div class="method-content"><h3>Автоматически</h3><p>Сам найдет папку packs</p></div><label class="switch"><input type="checkbox" id="toggle-auto" ${currentInstallMethod === 'auto' ? 'checked' : ''}><span class="slider"></span></label></div>
+                <div class="method-card-new ${currentInstallMethod === 'sdls' ? 'active-method' : ''}" id="card-sdls"><div class="method-icon"><span class="material-symbols-outlined">folder_zip</span></div><div class="method-content"><h3>sDLS Метод</h3><p>Ручной режим (Documents)</p></div><label class="switch"><input type="checkbox" id="toggle-sdls" ${currentInstallMethod === 'sdls' ? 'checked' : ''}><span class="slider"></span></label></div>
+                <div class="method-card-new ${currentInstallMethod === 'no_sdls' ? 'active-method' : ''}" id="card-nosdls"><div class="method-icon"><span class="material-symbols-outlined">folder_open</span></div><div class="method-content"><h3>Стандартный (No-SDLS)</h3><p>Прямая замена файлов</p></div><label class="switch"><input type="checkbox" id="toggle-nosdls" ${currentInstallMethod === 'no_sdls' ? 'checked' : ''}><span class="slider"></span></label></div>
             </div>
+            <div class="big-panel grow-panel"><h2 class="panel-title">Справка по методам</h2><div class="methods-info-list"><div class="info-item"><div class="info-content"><span class="dash">—</span><p>Обычно не нужен, но если ты не знаешь что конкретно щас, микропатч или просто обнова, тыкни тумблер, лаунчер поможет.</p></div><span class="info-badge badge-auto">Автоматически</span></div><div class="divider"></div><div class="info-item"><div class="info-content"><span class="dash">—</span><p>Если ты уже в курсе что у игры есть микропатч, тыкай сюда и устаналивай.</p></div><span class="info-badge badge-sdls">sDLS Метод</span></div><div class="divider"></div><div class="info-item"><div class="info-content"><span class="dash">—</span><p>Тоже самое что и второй, только при условии что это обычная обнова :3</p></div><span class="info-badge badge-nosdls">Стандартный</span></div></div></div>
         </div>`;
+    const tA = document.getElementById('toggle-auto'), tS = document.getElementById('toggle-sdls'), tN = document.getElementById('toggle-nosdls');
+    const cA = document.getElementById('card-auto'), cS = document.getElementById('card-sdls'), cN = document.getElementById('card-nosdls');
+    function upd(m) { currentInstallMethod = m; cA.classList.remove('active-method'); cS.classList.remove('active-method'); cN.classList.remove('active-method'); if(m==='auto')cA.classList.add('active-method'); if(m==='sdls')cS.classList.add('active-method'); if(m==='no_sdls')cN.classList.add('active-method'); }
+    tA.addEventListener('change', ()=>{if(tA.checked){tS.checked=false;tN.checked=false;upd('auto');}else tA.checked=true;});
+    tS.addEventListener('change', ()=>{if(tS.checked){tA.checked=false;tN.checked=false;upd('sdls');}else tS.checked=true;});
+    tN.addEventListener('change', ()=>{if(tN.checked){tA.checked=false;tS.checked=false;upd('no_sdls');}else tN.checked=true;});
 }
 
-// --- АВТОРЫ (ТОЖЕ ЧЕРЕЗ PYTHON) ---
 async function loadAuthors() {
     contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div></div>`;
-    if (!window.pywebview) return;
-
     try {
-        const response = await window.pywebview.api.get_authors_data();
-        if (!response.success) throw new Error(response.error);
-        
-        const authors = response.data;
+        let authors = [];
+        if (window.pywebview) {
+            // ЗАГРУЗКА ЧЕРЕЗ PYTHON (ОБХОД БЛОКИРОВОК)
+            authors = await window.pywebview.api.fetch_data_bypass(REPO_AUTHORS_URL);
+            if (!authors) throw new Error("Ошибка данных Python");
+        } else {
+            // Fallback
+            const resp = await fetch(REPO_AUTHORS_URL);
+            if(!resp.ok) throw new Error("Ошибка сети");
+            authors = await resp.json();
+        }
+
         let authorsListHtml = '';
         authors.forEach((author) => {
             let avatarUrl = author.avatar || "";
@@ -295,24 +389,33 @@ async function loadAuthors() {
                 <div class="author-row">
                     <div class="author-avatar-wrapper">
                         <img src="${avatarUrl}" alt="${author.name}" class="author-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <div class="author-avatar-placeholder" style="background-color: rgba(208, 188, 255, 0.2); color: #d0bcff; display: none;">${firstLetter}</div>
+                        <div class="author-avatar-placeholder" style="background-color: rgba(var(--md-sys-color-primary-rgb), 0.2); color: var(--md-sys-color-primary); display: none;">${firstLetter}</div>
                     </div>
                     <div class="author-details"><h3>${author.name}</h3><span class="role">${author.role}</span><p>${author.bio || ""}</p></div>
                 </div>`;
         });
         contentArea.innerHTML = `
             <div class="about-page-container">
-                <div class="big-panel authors-panel"><h2 class="panel-title">Команда</h2><div class="authors-list">${authorsListHtml}</div></div>
+                <div class="big-panel authors-panel"><h2 class="panel-title">Команда проекта</h2><div class="authors-list">${authorsListHtml}</div></div>
                 <div class="big-panel app-info-panel"><h2 class="panel-title">О приложении</h2>
                     <div class="app-details">
-                        <div class="app-header-row"><span class="app-version-badge">v1.0.0</span></div>
-                        <div class="app-description-block"><p class="app-desc-text">Универсальный лаунчер для Tanks Blitz.</p></div>
+                        <div class="app-header-row"><span class="app-version-badge">LOADER ASTR v1.0.0 Beta</span><span style="font-size: 13px; color: #666;">Build: 2025.11.25</span></div>
+                        <div class="app-description-block">
+                            <p class="app-desc-text">Это универсальный лаунчер-загрузчик модов в игру <strong>Tanks Blitz</strong>.</p>
+                            <ul class="app-features-list-new">
+                                <li>Учитывает <strong>sDLS</strong> (Steam DLC System)</li>
+                                <li>Поддерживает обычные обновления</li>
+                                <li>Автоматические бэкапы</li>
+                                <li>Удобный каталог модификаций</li>
+                                <li>Быстрое восстановление игры</li>
+                            </ul>
+                        </div>
                         <div style="flex-grow: 1;"></div>
-                        <div class="app-footer-row"><p class="app-credits">(C) 2025</p></div>
+                        <div class="app-footer-row"><p class="app-credits">(C) Launcher 2025</p></div>
                     </div>
                 </div>
             </div>`;
-    } catch (error) { contentArea.innerHTML = `<p style="color:#ff5252;">Ошибка: ${error.message}</p>`; }
+    } catch (error) { contentArea.innerHTML = `<p style="color:#ff5252;">Ошибка авторов: ${error.message}</p>`; }
 }
 
 function startInstallProcess(id, name, url) {
@@ -323,11 +426,37 @@ function startInstallProcess(id, name, url) {
     window.pywebview.api.install_mod(id, url, currentInstallMethod);
 }
 
-if(modalCloseBtn) modalCloseBtn.addEventListener('click', () => { closeModal(); });
+if(modalCloseBtn) modalCloseBtn.addEventListener('click', () => { if(window.pywebview) window.pywebview.api.cancel_install(); closeModal(); });
 function closeModal() { modal.classList.add('hidden'); }
 
 window.updateRealProgress = (p, t) => { progressBar.style.width = p + "%"; progressPercent.innerText = p + "%"; modalStatus.innerText = t; }
 window.finishInstall = (s, m) => {
     if(s) { installView.classList.add('view-hidden'); successView.classList.remove('view-hidden'); setTimeout(() => { closeModal(); loadMods(); }, 2000); }
-    else { installView.classList.add('view-hidden'); errorView.classList.remove('view-hidden'); errorMessage.innerText = m; setTimeout(closeModal, 3000); }
+    else { if(m==="Canceled"){closeModal();} else { installView.classList.add('view-hidden'); errorView.classList.remove('view-hidden'); errorMessage.innerText = m; setTimeout(closeModal, 3000); } }
 }
+
+function openRepairModal() {
+    const installedMods = globalModsList.filter(m => globalInstalledIds.includes(m.id));
+    repairList.innerHTML = '';
+    if (installedMods.length === 0) repairList.innerHTML = '<p class="empty-text">Нет установленных модов для починки.</p>';
+    else {
+        installedMods.forEach(mod => {
+            const item = document.createElement('div'); item.className = 'repair-item';
+            item.innerHTML = `<span>${mod.name}</span><button class="repair-action-btn" onclick="restoreMod('${mod.id}', '${mod.name}')"><span class="material-symbols-outlined">build</span></button>`;
+            repairList.appendChild(item);
+        });
+    }
+    repairModal.classList.remove('hidden');
+}
+
+async function restoreMod(id, name) {
+    repairModal.classList.add('hidden');
+    installView.classList.remove('view-hidden'); successView.classList.add('view-hidden'); errorView.classList.add('view-hidden');
+    progressBar.style.width = "100%"; progressPercent.innerText = ""; modalTitle.innerText = "Восстановление..."; modalStatus.innerText = "Обработка...";
+    modal.classList.remove('hidden');
+    const res = await window.pywebview.api.restore_mod(id);
+    if (res.success) finishInstall(true, res.message); else finishInstall(false, res.message);
+}
+
+if(repairCloseBtn) repairCloseBtn.addEventListener('click', () => repairModal.classList.add('hidden'));
+const rb = document.getElementById('global-repair-btn'); if(rb) rb.addEventListener('click', openRepairModal);
