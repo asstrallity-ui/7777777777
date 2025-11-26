@@ -45,6 +45,9 @@ let globalInstalledIds = [];
 let newUpdateUrl = "";
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Создаем модальное окно блокировки заранее (скрытое)
+    createGeoBlockModal();
+
     const savedColor = localStorage.getItem('accentColor');
     if (savedColor) {
         applyAccentColor(savedColor);
@@ -67,6 +70,47 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('pywebviewready', checkEnvironment);
+
+// === GEO BLOCK MODAL (USING EXISTING STYLES) ===
+function createGeoBlockModal() {
+    if (document.getElementById('geo-block-modal')) return;
+    
+    // Используем те же классы, что и в других модалках, чтобы сохранить дизайн
+    const m = document.createElement('div');
+    m.id = 'geo-block-modal';
+    m.className = 'modal-overlay hidden';
+    m.style.zIndex = '9999'; 
+    
+    // Внутри используем inline стили только для специфики (цвет ошибки),
+    // остальное наследуется от modal-content
+    m.innerHTML = `
+        <div class="modal-content" style="text-align:center; width:420px; border: 1px solid #ff5252;">
+            <div style="color:#ff5252; margin-bottom:16px;">
+                <span class="material-symbols-outlined" style="font-size:48px;">public_off</span>
+            </div>
+            <h3 style="color:#ff5252; font-size:20px; margin-bottom:16px;">Доступ ограничен</h3>
+            <p style="color:var(--md-sys-color-on-surface); line-height:1.5; margin-bottom:24px; opacity:0.8;">
+                Обнаружен IP-адрес Украины.<br>
+                Пожалуйста, <b>включите VPN</b> (Россия/Европа) и перезапустите приложение.
+            </p>
+            <button id="btn-geo-restart" class="modal-action-btn" style="background-color:#ff5252; color:white; box-shadow: 0 4px 15px rgba(255, 82, 82, 0.3);">
+                <span class="material-symbols-outlined">restart_alt</span>
+                Перезапустить лаунчер
+            </button>
+        </div>
+    `;
+    document.body.appendChild(m);
+    
+    document.getElementById('btn-geo-restart').addEventListener('click', () => {
+        if(window.pywebview) window.pywebview.api.restart_app();
+        else location.reload();
+    });
+}
+
+function showGeoBlock() {
+    const m = document.getElementById('geo-block-modal');
+    if(m) m.classList.remove('hidden');
+}
 
 function showToast(msg) {
     if(!toast) return;
@@ -260,7 +304,8 @@ function renderSettings() {
             try {
                 const res = await window.pywebview.api.check_connection_status();
                 if (res.status === 'blocked') {
-                    showToast(`IP ЗАБЛОКИРОВАН (UA)`);
+                    // Если IP заблокирован - показываем модалку
+                    showGeoBlock();
                 } else if (res.status === 'ok') {
                     showToast("IP ДОСТУПЕН (Всё ок)");
                 } else {
@@ -289,7 +334,15 @@ function checkEnvironment() {
             globalInstalledIds = ids;
             loadMods(false); 
         });
-        checkForUpdates();
+
+        // АВТОМАТИЧЕСКАЯ ПРОВЕРКА ПРИ СТАРТЕ
+        window.pywebview.api.check_connection_status().then(res => {
+            if(res.status === 'blocked') {
+                showGeoBlock();
+            } else {
+                checkForUpdates();
+            }
+        });
     }
 }
 
