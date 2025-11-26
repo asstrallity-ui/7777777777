@@ -33,7 +33,12 @@
                 
                 <div style="flex-grow: 1;"></div>
                 
-                <button class="nav-item" data-tab="settings" style="margin-bottom: 12px;"><span class="material-symbols-outlined">palette</span>Персонализация</button>
+                <!-- КНОПКА ПРОВЕРКИ ОБНОВЛЕНИЙ -->
+                <button class="nav-item" id="btn-check-updates">
+                    <span class="material-symbols-outlined">update</span>Проверить обновления
+                </button>
+
+                <button class="nav-item" data-tab="settings"><span class="material-symbols-outlined">palette</span>Настройки темы</button>
             </nav>
             <div class="sidebar-footer">v 1.0.0 Beta</div>
         </aside>
@@ -43,10 +48,6 @@
                 <h2 id="page-title">Каталог модификаций</h2>
                 <div class="top-bar-actions">
                     <div class="social-links">
-                        <button id="btn-check-updates" class="social-btn" title="Проверить обновления">
-                            <span class="material-symbols-outlined" style="font-size: 20px;">update</span>
-                        </button>
-                        <div class="divider-vertical"></div>
                         <a href="https://t.me/RHJMODS" target="_blank" class="social-btn telegram-btn"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.176 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
                         <a href="https://t.me/astrremod" target="_blank" class="social-btn telegram-btn"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.176 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
                     </div>
@@ -103,22 +104,21 @@
         </div>
     </div>
 
+    
     <!-- МОДАЛКА ДЛЯ УКР IP -->
-    <div id="geo-modal" class="modal-overlay hidden" style="backdrop-filter: blur(10px); background: rgba(0,0,0,0.85); z-index: 9999;">
-        <div class="modal-content" style="max-width: 400px; text-align: center; border: 1px solid #ff5252; box-shadow: none;">
-            <span class="material-symbols-outlined" style="font-size: 48px; color: #ff5252; margin-bottom: 16px; display: block;">block</span>
-            <h3 style="color: #ff5252; font-size: 20px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">Доступ запрещен</h3>
-            <p style="color: #e0e0e0; font-size: 14px; line-height: 1.5; margin-bottom: 12px;">
-                Ваш регион не поддерживается.
+    <div id="geo-modal" class="modal-overlay hidden" style="backdrop-filter: blur(5px); background: rgba(0,0,0,0.6); z-index: 9999;">
+        <div class="modal-content" style="max-width: 380px; text-align: center; background: var(--md-sys-color-surface); border-radius: 28px; padding: 24px; border: none; box-shadow: var(--glass-shadow);">
+            <span class="material-symbols-outlined" style="font-size: 32px; color: var(--md-sys-color-on-surface); margin-bottom: 16px; opacity: 0.8;">public_off</span>
+            <h3 style="color: var(--md-sys-color-on-surface); font-size: 24px; margin-bottom: 16px; font-weight: 400;">Доступ ограничен</h3>
+            <p style="color: var(--md-sys-color-outline); font-size: 14px; line-height: 1.5; margin-bottom: 32px;">
+                Твой регион проживания не поддерживается в сервисах ASTR - включи русский VPN и возвращайся!
             </p>
-            <p style="color: #938f99; font-size: 13px; line-height: 1.5; margin-bottom: 24px;">
-                Доступ к сервисам Loader ASTR невозможен с украинского IP-адреса. Пожалуйста, используйте VPN (RU).
-            </p>
-            <button id="geo-exit-btn" class="install-btn" style="background-color: #ff5252; color: #fff; width: 100%; justify-content: center; height: 44px; font-size: 14px; border-radius: 12px; border: none;">
-                <span class="material-symbols-outlined" style="margin-right: 8px; font-size: 20px;">logout</span> Выйти
+            <button id="geo-exit-btn" class="install-btn" style="background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); width: 100%; justify-content: center; height: 40px; font-size: 14px; border-radius: 20px; border: none; font-weight: 500;">
+                Выйти
             </button>
         </div>
     </div>
+
 
     <!-- ОКНО ОБНОВЛЕНИЯ -->
     <div id="update-modal" class="modal-overlay hidden">
