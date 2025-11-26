@@ -3,8 +3,10 @@ const REPO_AUTHORS_URL = 'https://rh-archive.ru/mods_files_github/authors.json';
 const REPO_BUY_URL = 'https://rh-archive.ru/mods_files_github/buy.json'; 
 const REPO_BASE_URL = 'https://rh-archive.ru/mods_files_github/';
 
+
 const contentArea = document.getElementById('content-area');
 const navItems = document.querySelectorAll('.nav-item');
+
 
 const modal = document.getElementById('progress-modal');
 const installView = document.getElementById('install-view');
@@ -17,9 +19,11 @@ const modalStatus = document.getElementById('modal-status');
 const modalTitle = document.getElementById('modal-title');
 const modalCloseBtn = document.getElementById('modal-close-btn');
 
+
 const repairModal = document.getElementById('repair-modal'); 
 const repairList = document.getElementById('repair-list');
 const repairCloseBtn = document.getElementById('repair-close-btn');
+
 
 const infoModal = document.getElementById('info-modal'); 
 const infoTitle = document.getElementById('info-modal-title');
@@ -27,7 +31,9 @@ const infoDesc = document.getElementById('info-modal-desc');
 const infoActionBtn = document.getElementById('info-modal-action');
 const infoCloseBtn = document.getElementById('info-close-btn');
 
+
 const splash = document.getElementById('splash-screen');
+
 
 // Обновление
 const btnCheckUpdates = document.getElementById('btn-check-updates');
@@ -39,11 +45,13 @@ const btnStartUpdate = document.getElementById('btn-start-update');
 const btnSkipUpdate = document.getElementById('btn-skip-update');
 const toast = document.getElementById('toast-notification');
 
+
 let currentInstallMethod = 'auto'; 
 let globalModsList = []; 
 let globalBuyList = []; 
 let globalInstalledIds = [];
 let newUpdateUrl = "";
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const savedColor = localStorage.getItem('accentColor');
@@ -63,7 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(checkPing, 5000);
 });
 
+
 window.addEventListener('pywebviewready', checkEnvironment);
+
 
 function showToast(msg) {
     if(!toast) return;
@@ -71,6 +81,7 @@ function showToast(msg) {
     toast.classList.remove('hidden');
     setTimeout(() => toast.classList.add('hidden'), 3000);
 }
+
 
 async function checkForUpdates(manual = false) {
     if (!window.pywebview) {
@@ -82,6 +93,7 @@ async function checkForUpdates(manual = false) {
         const icon = btnCheckUpdates.querySelector('span');
         icon.style.animation = "spin 1s linear infinite";
     }
+
 
     try {
         const res = await window.pywebview.api.check_for_updates();
@@ -105,7 +117,9 @@ async function checkForUpdates(manual = false) {
     }
 }
 
+
 if (btnCheckUpdates) btnCheckUpdates.addEventListener('click', () => checkForUpdates(true));
+
 
 if (btnStartUpdate) {
     btnStartUpdate.addEventListener('click', () => {
@@ -116,7 +130,9 @@ if (btnStartUpdate) {
     });
 }
 
+
 if (btnSkipUpdate) btnSkipUpdate.addEventListener('click', () => updateModal.classList.add('hidden'));
+
 
 async function checkPing() {
     const pingText = document.getElementById('ping-text');
@@ -138,6 +154,7 @@ async function checkPing() {
     }
 }
 
+
 function applyAccentColor(color) {
     const div = document.createElement('div');
     div.style.color = color;
@@ -152,6 +169,7 @@ function applyAccentColor(color) {
         document.documentElement.style.setProperty('--md-sys-color-on-primary', '#1e1e1e');
     }
 }
+
 
 function renderSettings() {
     let col = getComputedStyle(document.documentElement).getPropertyValue('--md-sys-color-primary').trim();
@@ -204,14 +222,19 @@ function renderSettings() {
     });
 }
 
+
 window.resetTheme = function() { applyAccentColor('#d0bcff'); localStorage.removeItem('accentColor'); renderSettings(); }
 
+
 function checkEnvironment() {
-    checkGeoRestriction();
     const repairBtn = document.getElementById('global-repair-btn');
     if (window.pywebview && repairBtn) repairBtn.classList.remove('hidden');
-    checkForUpdates(false); 
+    checkForUpdates(false);
+    
+    // === ДОБАВЛЕН ВЫЗОВ ПРОВЕРКИ IP ===
+    checkGeoRestriction();
 }
+
 
 navItems.forEach(item => {
     item.addEventListener('click', () => {
@@ -220,6 +243,7 @@ navItems.forEach(item => {
         handleTabChange(item.getAttribute('data-tab'));
     });
 });
+
 
 function handleTabChange(tab) {
     contentArea.classList.add('fade-out');
@@ -232,6 +256,7 @@ function handleTabChange(tab) {
         requestAnimationFrame(() => contentArea.classList.remove('fade-out'));
     }, 250);
 }
+
 
 async function loadMods() {
     try {
@@ -254,6 +279,7 @@ async function loadMods() {
     }
 }
 
+
 function renderMods(mods, installedIds, buyList) {
     contentArea.innerHTML = '';
     if (!mods || mods.length === 0) { contentArea.innerHTML = '<p class="empty-text">Пусто.</p>'; return; }
@@ -270,6 +296,9 @@ function renderMods(mods, installedIds, buyList) {
         if (buyInfo) {
             if (buyInfo.status === 'preorder') {
                 btnText = 'Предзаказ'; btnIcon = 'schedule'; onClickAction = `openInfoModal('preorder', '${mod.id}')`;
+            } else if (buyInfo.status === 'BT') {
+                // === ЛОГИКА BT ===
+                btnText = 'Временно недоступен'; btnIcon = 'schedule'; onClickAction = `openInfoModal('testing', '${mod.id}')`;
             } else {
                 btnText = 'Купить'; btnIcon = 'shopping_cart'; onClickAction = `openInfoModal('paid', '${mod.id}')`;
             }
@@ -292,15 +321,33 @@ function renderMods(mods, installedIds, buyList) {
     });
 }
 
+
 function openInfoModal(type, modId) {
     const buyItem = globalBuyList.find(b => b.id === modId);
     const modItem = globalModsList.find(m => m.id === modId);
     if (!buyItem || !modItem) return;
     infoModal.classList.remove('hidden');
-    infoActionBtn.className = 'modal-action-btn'; 
-    let statusTitle = type === 'preorder' ? 'Предзаказ' : 'Платный контент';
-    let btnText = type === 'preorder' ? 'ЗАКАЗАТЬ' : 'КУПИТЬ';
-    let btnIcon = type === 'preorder' ? 'schedule' : 'shopping_cart';
+
+    let statusTitle, btnText, btnIcon, showButton;
+
+    if (type === 'preorder') {
+        statusTitle = 'Предзаказ';
+        btnText = 'ЗАКАЗАТЬ';
+        btnIcon = 'schedule';
+        showButton = true;
+    } else if (type === 'testing') {
+        // === ЛОГИКА BT ===
+        statusTitle = 'В процессе....';
+        btnText = '';
+        btnIcon = '';
+        showButton = false;
+    } else {
+        statusTitle = 'Платный контент';
+        btnText = 'КУПИТЬ';
+        btnIcon = 'shopping_cart';
+        showButton = true;
+    }
+
     infoTitle.innerText = statusTitle;
     infoDesc.innerHTML = `
         <div class="info-row"><span class="info-label">Мод:</span><span class="info-value">${modItem.name}</span></div>
@@ -309,11 +356,19 @@ function openInfoModal(type, modId) {
         <p class="info-description">${buyItem.desc || "Описание недоступно."}</p>
         <div class="info-price-tag">${buyItem.price || "Цена договорная"}</div>
     `;
-    infoActionBtn.innerHTML = `${btnText} <span class="material-symbols-outlined">${btnIcon}</span>`;
-    infoActionBtn.onclick = () => { if (buyItem.link) window.open(buyItem.link, '_blank'); };
+
+    if (showButton) {
+        infoActionBtn.style.display = 'flex';
+        infoActionBtn.innerHTML = `${btnText} <span class="material-symbols-outlined">${btnIcon}</span>`;
+        infoActionBtn.onclick = () => { if (buyItem.link) window.open(buyItem.link, '_blank'); };
+    } else {
+        infoActionBtn.style.display = 'none';
+    }
 }
 
+
 if(infoCloseBtn) infoCloseBtn.addEventListener('click', () => infoModal.classList.add('hidden'));
+
 
 function renderInstallMethods() {
     contentArea.innerHTML = `
@@ -332,6 +387,7 @@ function renderInstallMethods() {
     tS.addEventListener('change', ()=>{if(tS.checked){tA.checked=false;tN.checked=false;upd('sdls');}else tS.checked=true;});
     tN.addEventListener('change', ()=>{if(tN.checked){tA.checked=false;tS.checked=false;upd('no_sdls');}else tN.checked=true;});
 }
+
 
 async function loadAuthors() {
     contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div></div>`;
@@ -360,6 +416,7 @@ async function loadAuthors() {
     } catch (error) { contentArea.innerHTML = `<p style="color:#ff5252;">Ошибка авторов.</p>`; }
 }
 
+
 function startInstallProcess(id, name, url) {
     if(!window.pywebview) return;
     if(url && !url.startsWith('http')) url = REPO_BASE_URL + url;
@@ -369,14 +426,17 @@ function startInstallProcess(id, name, url) {
     window.pywebview.api.install_mod(id, url, currentInstallMethod);
 }
 
+
 if(modalCloseBtn) modalCloseBtn.addEventListener('click', () => { if(window.pywebview) window.pywebview.api.cancel_install(); closeModal(); });
 function closeModal() { modal.classList.add('hidden'); }
+
 
 window.updateRealProgress = (p, t) => { progressBar.style.width = p + "%"; progressPercent.innerText = p + "%"; modalStatus.innerText = t; }
 window.finishInstall = (s, m) => {
     if(s) { installView.classList.add('view-hidden'); successView.classList.remove('view-hidden'); setTimeout(() => { closeModal(); loadMods(); }, 2000); }
     else { if(m==="Canceled"){closeModal();} else { installView.classList.add('view-hidden'); errorView.classList.remove('view-hidden'); errorMessage.innerText = m; setTimeout(closeModal, 3000); } }
 }
+
 
 function openRepairModal() {
     const installedMods = globalModsList.filter(m => globalInstalledIds.includes(m.id));
@@ -392,6 +452,7 @@ function openRepairModal() {
     repairModal.classList.remove('hidden');
 }
 
+
 async function restoreMod(id, name) {
     repairModal.classList.add('hidden');
     installView.classList.remove('view-hidden'); successView.classList.add('view-hidden'); errorView.classList.add('view-hidden');
@@ -401,11 +462,11 @@ async function restoreMod(id, name) {
     if (res.success) finishInstall(true, res.message); else finishInstall(false, res.message);
 }
 
+
 if(repairCloseBtn) repairCloseBtn.addEventListener('click', () => repairModal.classList.add('hidden'));
 const rb = document.getElementById('global-repair-btn'); if(rb) rb.addEventListener('click', openRepairModal);
 
-
-// --- GEO RESTRICTION LOGIC ---
+// === GEO RESTRICTION LOGIC ===
 const geoModal = document.getElementById('geo-modal');
 const geoExitBtn = document.getElementById('geo-exit-btn');
 
