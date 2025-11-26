@@ -38,7 +38,7 @@
                 <span class="material-symbols-rounded">info</span>
                 <span>О программе</span>
             </div>
-            <!-- Кнопка для теста VPN окна -->
+            <!-- VPN TEST BUTTON -->
             <div class="nav-item" id="btn-test-vpn" style="margin-top: auto; color: #f2b8b5; font-size: 0.8rem;">
                 <span class="material-symbols-rounded">vpn_lock</span>
                 <span>Тест VPN</span>
@@ -48,7 +48,7 @@
         <div class="status-bar">
             <div class="ping-indicator">
                 <div class="dot" id="ping-dot"></div>
-                <span id="ping-text">Проверка...</span>
+                <span id="ping-text">Checking...</span>
             </div>
             <div id="version-text">v1.0.0</div>
         </div>
@@ -59,21 +59,21 @@
         <div class="header">
             <div class="page-title" id="page-title">Каталог модов</div>
             <div class="header-actions">
-                <button class="icon-btn" id="global-repair-btn" title="Управление установленными модами">
+                <button class="icon-btn" id="global-repair-btn" title="Управление модами">
                     <span class="material-symbols-rounded">build</span>
                 </button>
-                <button class="icon-btn" id="btn-check-updates" title="Проверить обновления">
+                <button class="icon-btn" id="btn-check-updates" title="Обновить">
                     <span class="material-symbols-rounded">sync</span>
                 </button>
             </div>
         </div>
 
         <div id="content-area">
-            <!-- Сюда загружаются карточки модов -->
+            <!-- Content -->
         </div>
     </div>
 
-    <!-- INSTALL MODAL (PROGRESS) -->
+    <!-- INSTALL MODAL -->
     <div id="progress-modal" class="modal-overlay hidden">
         <div class="modal-window">
             <div class="modal-header">
@@ -85,7 +85,7 @@
             
             <div id="install-view">
                 <div class="progress-info">
-                    <span id="modal-status">Подготовка...</span>
+                    <span id="modal-status">...</span>
                     <span id="progress-percent">0%</span>
                 </div>
                 <div class="progress-track">
@@ -106,7 +106,7 @@
         </div>
     </div>
 
-    <!-- INFO MODAL (BUY/PREORDER) -->
+    <!-- INFO MODAL (BUY) -->
     <div id="info-modal" class="modal-overlay hidden">
         <div class="modal-window">
             <div class="modal-header">
@@ -121,15 +121,10 @@
                 <span class="info-value" id="info-mod-name">...</span>
             </div>
             
-            <div class="info-desc-box" id="info-modal-desc">
-                Описание...
-            </div>
+            <div class="info-desc-box" id="info-modal-desc">Описание...</div>
+            <div class="price-tag" id="info-price">...</div>
 
-            <div class="price-tag" id="info-price">500 RUB</div>
-
-            <button id="info-modal-action" class="modal-action-btn">
-                Перейти к покупке
-            </button>
+            <button id="info-modal-action" class="modal-action-btn">Перейти</button>
         </div>
     </div>
 
@@ -142,68 +137,55 @@
                     <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
-            <div class="repair-list" id="repair-list">
-                <!-- Список установленных модов -->
-            </div>
+            <div class="repair-list" id="repair-list"></div>
         </div>
     </div>
 
-    <!-- UPDATE MODAL -->
+    <!-- UPDATE MODAL (Была пропущена!) -->
     <div id="update-modal" class="modal-overlay hidden">
         <div class="modal-window">
             <div class="modal-header">
-                <h3 class="modal-title">Доступно обновление!</h3>
+                <h3 class="modal-title">Обновление</h3>
             </div>
             
             <div class="update-info">
                 <div class="update-header-row">
-                    <span id="update-version">v1.0.1</span>
-                    <span id="update-size">Размер: ...</span>
+                    <span id="update-version">...</span>
+                    <span id="update-size">...</span>
                 </div>
                 <div class="changelog-box">
-                    <p style="margin-bottom:4px; font-size:0.8rem; opacity:0.7;">Список изменений:</p>
+                    <p style="margin-bottom:4px; font-size:0.8rem; opacity:0.7;">Изменения:</p>
                     <p id="update-changelog" style="margin:0;">...</p>
                 </div>
             </div>
 
             <div class="modal-footer">
-                <button id="btn-start-update" class="btn-primary">
-                    <span class="material-symbols-rounded">download</span> Обновить
-                </button>
-                <button id="btn-skip-update" class="btn-secondary">Позже</button>
+                <button id="btn-start-update" class="btn-primary">Скачать</button>
+                <button id="btn-skip-update" class="btn-secondary">Отмена</button>
             </div>
         </div>
     </div>
 
-    <!-- VPN ALERT MODAL -->
+    <!-- VPN MODAL -->
     <div id="vpn-modal" class="modal-overlay hidden" style="z-index: 9999;">
         <div class="modal-window" style="border-color: #f2b8b5; box-shadow: 0 0 50px rgba(242, 184, 181, 0.2);">
             <div style="text-align: center; margin-bottom: 20px;">
                 <span class="material-symbols-rounded" style="font-size: 64px; color: #f2b8b5;">public_off</span>
             </div>
-            
             <h3 style="text-align: center; color: #f2b8b5; margin-bottom: 16px;">Доступ ограничен</h3>
-            
             <p style="text-align: center; font-size: 15px; line-height: 1.6; color: #e6e1e5; margin-bottom: 24px;">
-                Обнаружен <strong>Украинский IP адрес</strong>.<br>
-                Наш сервер (.ru) заблокирован вашим провайдером.
+                Обнаружен <strong>Украинский IP</strong>.<br>Сервер заблокирован.
             </p>
-            
             <div style="background: rgba(242, 184, 181, 0.1); padding: 16px; border-radius: 12px; border: 1px solid rgba(242, 184, 181, 0.3); margin-bottom: 24px;">
                 <p style="margin: 0; font-size: 14px; color: #f2b8b5; text-align: center;">
-                    Пожалуйста, <strong>включите VPN</strong> (выберите Россию или Европу) и перезапустите лаунчер.
+                    Включите <strong>VPN</strong> (Россия/Европа) и перезапустите.
                 </p>
             </div>
-
-            <button id="btn-vpn-reload" class="modal-action-btn" style="background-color: #f2b8b5; color: #601410;">
-                Перезагрузить
-            </button>
+            <button id="btn-vpn-reload" class="modal-action-btn" style="background-color: #f2b8b5; color: #601410;">Перезагрузить</button>
         </div>
     </div>
 
-    <!-- TOAST -->
-    <div id="toast-notification" class="toast hidden">Сообщение</div>
-
+    <div id="toast-notification" class="toast hidden"></div>
     <script src="script.js"></script>
 </body>
 </html>
