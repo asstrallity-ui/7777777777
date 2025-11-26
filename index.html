@@ -106,15 +106,31 @@
 
     
     <!-- МОДАЛКА ДЛЯ УКР IP -->
-    <div id="geo-modal" class="modal-overlay hidden" style="backdrop-filter: blur(5px); background: rgba(0,0,0,0.6); z-index: 9999;">
-        <div class="modal-content" style="max-width: 380px; text-align: center; background: var(--md-sys-color-surface); border-radius: 28px; padding: 24px; border: none; box-shadow: var(--glass-shadow);">
-            <span class="material-symbols-outlined" style="font-size: 32px; color: var(--md-sys-color-on-surface); margin-bottom: 16px; opacity: 0.8;">public_off</span>
-            <h3 style="color: var(--md-sys-color-on-surface); font-size: 24px; margin-bottom: 16px; font-weight: 400;">Доступ ограничен</h3>
-            <p style="color: var(--md-sys-color-outline); font-size: 14px; line-height: 1.5; margin-bottom: 32px;">
-                Твой регион проживания не поддерживается в сервисах ASTR - включи русский VPN и возвращайся!
+    <style>
+        @keyframes blink-warning {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.95); }
+        }
+        .warning-icon {
+            animation: blink-warning 2s infinite ease-in-out;
+            color: #ff5252;
+            font-size: 56px;
+            margin-bottom: 20px;
+            display: block;
+        }
+    </style>
+    <div id="geo-modal" class="modal-overlay hidden" style="backdrop-filter: blur(8px); background: rgba(0,0,0,0.8); z-index: 9999;">
+        <div class="modal-content" style="max-width: 480px; width: 100%; text-align: center; background: #1e1e1e; border: 1px solid #ff5252; border-radius: 28px; padding: 32px; box-shadow: 0 0 40px rgba(255, 82, 82, 0.1);">
+            <span class="material-symbols-outlined warning-icon">warning</span>
+            <h3 style="color: #ff5252; font-size: 24px; margin-bottom: 16px; font-weight: 600; letter-spacing: 0.5px;">ДОСТУП ЗАПРЕЩЕН</h3>
+            <p style="color: #e0e0e0; font-size: 16px; margin-bottom: 8px; font-weight: 500;">
+                Ваш регион не поддерживается.
             </p>
-            <button id="geo-exit-btn" class="install-btn" style="background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); width: 100%; justify-content: center; height: 40px; font-size: 14px; border-radius: 20px; border: none; font-weight: 500;">
-                Выйти
+            <p style="color: #938f99; font-size: 14px; line-height: 1.6; margin-bottom: 32px;">
+                Доступ к сервисам Loader ASTR невозможен с украинского IP-адреса. Пожалуйста, используйте VPN (RU) для продолжения работы.
+            </p>
+            <button id="geo-exit-btn" class="install-btn" style="background-color: #ff5252; color: #fff; width: 100%; justify-content: center; height: 48px; font-size: 15px; border-radius: 24px; border: none; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;">
+                <span class="material-symbols-outlined" style="margin-right: 8px;">logout</span> Выйти
             </button>
         </div>
     </div>
