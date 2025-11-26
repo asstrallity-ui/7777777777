@@ -6,7 +6,6 @@ const REPO_BASE_URL = 'https://rh-archive.ru/mods_files_github/';
 const contentArea = document.getElementById('content-area');
 const navItems = document.querySelectorAll('.nav-item');
 
-// Окна
 const modal = document.getElementById('progress-modal');
 const installView = document.getElementById('install-view');
 const successView = document.getElementById('success-view');
@@ -81,7 +80,7 @@ async function checkForUpdates(manual = false) {
     
     if(manual && btnCheckUpdates) {
         const icon = btnCheckUpdates.querySelector('span');
-        if(icon) icon.style.animation = "spin 1s linear infinite";
+        icon.style.animation = "spin 1s linear infinite";
     }
 
     try {
@@ -89,21 +88,19 @@ async function checkForUpdates(manual = false) {
         
         if (res.available) {
             newUpdateUrl = res.url;
-            if(updateVerSpan) updateVerSpan.innerText = "v" + res.version;
-            if(updateLogP) updateLogP.innerText = res.changelog;
-            if(updateSizeSpan) updateSizeSpan.innerText = res.size || "MB";
-            
+            updateVerSpan.innerText = "v" + res.version;
+            updateLogP.innerText = res.changelog;
+            updateSizeSpan.innerText = res.size || "Неизвестно";
             updateModal.classList.remove('hidden');
         } else {
             if (manual) showToast(res.message || "Обновлений не найдено");
         }
     } catch (e) {
         if (manual) showToast("Ошибка проверки");
-        console.error(e);
     } finally {
         if(manual && btnCheckUpdates) {
             const icon = btnCheckUpdates.querySelector('span');
-            if(icon) icon.style.animation = "none";
+            icon.style.animation = "none";
         }
     }
 }
@@ -121,9 +118,39 @@ if (btnStartUpdate) {
 
 if (btnSkipUpdate) btnSkipUpdate.addEventListener('click', () => updateModal.classList.add('hidden'));
 
+async function checkPing() {
+    const pingText = document.getElementById('ping-text');
+    const pingDot = document.getElementById('ping-dot');
+    if (!pingText || !pingDot) return;
+    
+    const start = Date.now();
+    try {
+        await fetch(REPO_JSON_URL + '?t=' + start, { method: 'HEAD', cache: 'no-store' });
+        const end = Date.now();
+        const ping = end - start;
+        pingText.innerText = `Соединено: ${ping} ms`;
+        pingDot.style.backgroundColor = ping < 150 ? '#4caf50' : (ping < 300 ? '#ff9800' : '#f44336');
+        pingDot.style.boxShadow = `0 0 8px ${pingDot.style.backgroundColor}`;
+    } catch (e) {
+        pingText.innerText = 'Нет сети';
+        pingDot.style.backgroundColor = '#f44336';
+        pingDot.style.boxShadow = 'none';
+    }
+}
+
 function applyAccentColor(color) {
-    document.documentElement.style.setProperty('--md-sys-color-primary', color);
-    document.documentElement.style.setProperty('--md-sys-color-on-primary', '#1e1e1e');
+    const div = document.createElement('div');
+    div.style.color = color;
+    document.body.appendChild(div);
+    const computed = window.getComputedStyle(div).color; 
+    document.body.removeChild(div);
+    const rgbMatch = computed.match(/\d+/g);
+    if (rgbMatch) {
+        const rgbVal = `${rgbMatch[0]}, ${rgbMatch[1]}, ${rgbMatch[2]}`;
+        document.documentElement.style.setProperty('--md-sys-color-primary', computed);
+        document.documentElement.style.setProperty('--md-sys-color-primary-rgb', rgbVal);
+        document.documentElement.style.setProperty('--md-sys-color-on-primary', '#1e1e1e');
+    }
 }
 
 function renderSettings() {
@@ -142,49 +169,42 @@ function renderSettings() {
                         <input type="range" min="0" max="360" value="260" class="slider-hue" id="hue-slider">
                         <label style="margin-top:16px;">Пресеты</label>
                         <div class="presets-grid">
-                            <div class="color-preset" style="background: #d0bcff" onclick="setTheme('#d0bcff')"></div>
-                            <div class="color-preset" style="background: #ff4081" onclick="setTheme('#ff4081')"></div>
-                            <div class="color-preset" style="background: #00e676" onclick="setTheme('#00e676')"></div>
-                            <div class="color-preset" style="background: #2979ff" onclick="setTheme('#2979ff')"></div>
-                            <div class="color-preset" style="background: #ffea00" onclick="setTheme('#ffea00')"></div>
-                            <div class="color-preset" style="background: #e040fb" onclick="setTheme('#e040fb')"></div>
+                            <div class="color-preset" style="background: #d0bcff" data-col="#d0bcff"></div>
+                            <div class="color-preset" style="background: #ff4081" data-col="#ff4081"></div>
+                            <div class="color-preset" style="background: #00e676" data-col="#00e676"></div>
+                            <div class="color-preset" style="background: #2979ff" data-col="#2979ff"></div>
+                            <div class="color-preset" style="background: #ffea00" data-col="#ffea00"></div>
+                            <div class="color-preset" style="background: #e040fb" data-col="#e040fb"></div>
                         </div>
                     </div>
                 </div>
                 <div class="divider" style="margin: 24px 0;"></div>
-                <button class="reset-theme-btn" onclick="setTheme('#d0bcff')"><span class="material-symbols-outlined">restart_alt</span> Сбросить тему</button>
+                <button class="reset-theme-btn" onclick="resetTheme()"><span class="material-symbols-outlined">restart_alt</span> Сбросить тему</button>
             </div>
         </div>`;
-    
     const hueSlider = document.getElementById('hue-slider');
     const preview = document.getElementById('color-preview');
-    
+    const presets = document.querySelectorAll('.color-preset');
     if (hueSlider) {
         hueSlider.addEventListener('input', (e) => {
             const hue = e.target.value;
             const color = `hsl(${hue}, 100%, 75%)`; 
-            setTheme(color);
+            applyAccentColor(color);
+            localStorage.setItem('accentColor', color);
+            preview.style.backgroundColor = color;
         });
     }
+    presets.forEach(p => {
+        p.addEventListener('click', () => {
+            const color = p.getAttribute('data-col');
+            applyAccentColor(color);
+            localStorage.setItem('accentColor', color);
+            preview.style.backgroundColor = color;
+        });
+    });
 }
 
-window.setTheme = function(col) {
-    // Конвертация HSL в RGB через браузер
-    const div = document.createElement('div');
-    div.style.color = col;
-    document.body.appendChild(div);
-    const computed = window.getComputedStyle(div).color; 
-    document.body.removeChild(div);
-    
-    applyAccentColor(col);
-    
-    // Обновляем превью если мы в настройках
-    const preview = document.getElementById('color-preview');
-    if(preview) preview.style.backgroundColor = col;
-    
-    // Сохраняем HSL/Hex в localStorage
-    localStorage.setItem('accentColor', col);
-}
+window.resetTheme = function() { applyAccentColor('#d0bcff'); localStorage.removeItem('accentColor'); renderSettings(); }
 
 function checkEnvironment() {
     const repairBtn = document.getElementById('global-repair-btn');
@@ -212,75 +232,24 @@ function handleTabChange(tab) {
     }, 250);
 }
 
-async function checkPing() {
-    const pingText = document.getElementById('ping-text');
-    const pingDot = document.getElementById('ping-dot');
-    if (!pingText || !pingDot) return;
-    
-    // Пинг делаем обычным fetch, так как это HEAD запрос и он не так критичен
-    // Если заблочит - покажет "Нет сети", но загрузка модов через Python сработает
-    const start = Date.now();
-    try {
-        await fetch(REPO_JSON_URL + '?t=' + start, { method: 'HEAD', cache: 'no-store' });
-        const end = Date.now();
-        const ping = end - start;
-        pingText.innerText = `Соединено: ${ping} ms`;
-        pingDot.style.backgroundColor = ping < 150 ? '#4caf50' : (ping < 300 ? '#ff9800' : '#f44336');
-        pingDot.style.boxShadow = `0 0 8px ${pingDot.style.backgroundColor}`;
-    } catch (e) {
-        pingText.innerText = 'Нет сети';
-        pingDot.style.backgroundColor = '#f44336';
-        pingDot.style.boxShadow = 'none';
-    }
-}
-
-// --- ГЛАВНАЯ ФУНКЦИЯ ЗАГРУЗКИ (С ИСПРАВЛЕНИЕМ CORS) ---
 async function loadMods() {
-    contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div><p>Загрузка каталога...</p></div>`;
-    
     try {
-        let modsData = [];
-        let buyData = [];
-
-        if (window.pywebview) {
-            // ЗАГРУЗКА ЧЕРЕЗ PYTHON (ОБХОД БЛОКИРОВОК)
-            console.log("JS: Запрос списка модов через Python...");
-            
-            // Параллельный запрос
-            const [modsResp, buyResp] = await Promise.all([
-                window.pywebview.api.fetch_data_bypass(REPO_JSON_URL),
-                window.pywebview.api.fetch_data_bypass(REPO_BUY_URL)
-            ]);
-
-            if (!modsResp) throw new Error("Не удалось получить данные от Python");
-            
-            modsData = modsResp;
-            buyData = buyResp || [];
-
-        } else {
-            // Fallback для браузера (если кто-то открыл сайт)
-            const [m, b] = await Promise.all([
-                fetch(REPO_JSON_URL),
-                fetch(REPO_BUY_URL).catch(() => ({ json: () => [] }))
-            ]);
-            if(!m.ok) throw new Error("Ошибка сети (fetch)");
-            modsData = await m.json();
-            buyData = await b.json();
-        }
-
-        globalModsList = modsData; 
-        globalBuyList = buyData;
+        const [modsResp, buyResp] = await Promise.all([
+            fetch(REPO_JSON_URL).catch(e => null),
+            fetch(REPO_BUY_URL).catch(() => ({ json: () => [] }))
+        ]);
+        if (!modsResp || !modsResp.ok) throw new Error("Не удалось загрузить каталог");
+        globalModsList = await modsResp.json(); 
+        globalBuyList = await buyResp.json();
         globalInstalledIds = [];
-
         if (window.pywebview) {
             try { globalInstalledIds = await window.pywebview.api.check_installed_mods(globalModsList); } catch (e) {}
         }
-
         renderMods(globalModsList, globalInstalledIds, globalBuyList);
     } catch (e) { 
-        contentArea.innerHTML = `<div class="empty-state"><p style="color:#ff5252">Ошибка загрузки: ${e.message}</p></div>`; 
+        contentArea.innerHTML = `<div class="empty-state"><p>Ошибка загрузки: ${e.message}</p></div>`; 
     } finally {
-        if(splash) setTimeout(() => splash.classList.add('fade-out'), 500);
+        setTimeout(() => { if(splash) splash.classList.add('fade-out'); }, 500);
     }
 }
 
@@ -291,13 +260,12 @@ function renderMods(mods, installedIds, buyList) {
         let img = mod.image || ""; if(img && !img.startsWith('http')) img = REPO_BASE_URL + img;
         if(!img) img = "https://via.placeholder.com/400x220/111/fff?text=No+Image";
         const isInst = installedIds.includes(mod.id);
-        const buyInfo = buyList ? buyList.find(b => b.id === mod.id) : null;
+        const buyInfo = buyList.find(b => b.id === mod.id);
         let btnText = 'Установить';
         let btnIcon = 'download';
         let btnClass = 'install-btn';
         let isDisabled = false;
         let onClickAction = `startInstallProcess('${mod.id}', '${mod.name}', '${mod.file}')`;
-        
         if (buyInfo) {
             if (buyInfo.status === 'preorder') {
                 btnText = 'Предзаказ'; btnIcon = 'schedule'; onClickAction = `openInfoModal('preorder', '${mod.id}')`;
@@ -305,10 +273,9 @@ function renderMods(mods, installedIds, buyList) {
                 btnText = 'Купить'; btnIcon = 'shopping_cart'; onClickAction = `openInfoModal('paid', '${mod.id}')`;
             }
         } else {
-            if (!window.pywebview) { btnText = 'Доступно в приложении'; isDisabled = true; }
+            if (!window.pywebview) { btnText = 'Доступно в приложении'; isDisabled = true; } 
             else if (isInst) { btnText = 'Уже установлен'; btnIcon = 'check'; btnClass = 'install-btn installed'; isDisabled = true; }
         }
-
         const card = document.createElement('div'); card.className = 'mod-card';
         card.innerHTML = `
             <img src="${img}" class="card-image" loading="lazy">
@@ -330,10 +297,10 @@ function openInfoModal(type, modId) {
     if (!buyItem || !modItem) return;
     infoModal.classList.remove('hidden');
     infoActionBtn.className = 'modal-action-btn'; 
-    infoTitle.innerText = type === 'preorder' ? 'Предзаказ' : 'Платный контент';
+    let statusTitle = type === 'preorder' ? 'Предзаказ' : 'Платный контент';
     let btnText = type === 'preorder' ? 'ЗАКАЗАТЬ' : 'КУПИТЬ';
     let btnIcon = type === 'preorder' ? 'schedule' : 'shopping_cart';
-    
+    infoTitle.innerText = statusTitle;
     infoDesc.innerHTML = `
         <div class="info-row"><span class="info-label">Мод:</span><span class="info-value">${modItem.name}</span></div>
         <div class="info-row"><span class="info-label">Автор:</span><span class="info-value author-highlight">${modItem.author}</span></div>
@@ -368,18 +335,8 @@ function renderInstallMethods() {
 async function loadAuthors() {
     contentArea.innerHTML = `<div class="loader-spinner"><div class="spinner"></div></div>`;
     try {
-        let authors = [];
-        if (window.pywebview) {
-            // ЗАГРУЗКА ЧЕРЕЗ PYTHON (ОБХОД БЛОКИРОВОК)
-            authors = await window.pywebview.api.fetch_data_bypass(REPO_AUTHORS_URL);
-            if (!authors) throw new Error("Ошибка данных Python");
-        } else {
-            // Fallback
-            const resp = await fetch(REPO_AUTHORS_URL);
-            if(!resp.ok) throw new Error("Ошибка сети");
-            authors = await resp.json();
-        }
-
+        const response = await fetch(REPO_AUTHORS_URL);
+        const authors = await response.json();
         let authorsListHtml = '';
         authors.forEach((author) => {
             let avatarUrl = author.avatar || "";
@@ -397,29 +354,14 @@ async function loadAuthors() {
         contentArea.innerHTML = `
             <div class="about-page-container">
                 <div class="big-panel authors-panel"><h2 class="panel-title">Команда проекта</h2><div class="authors-list">${authorsListHtml}</div></div>
-                <div class="big-panel app-info-panel"><h2 class="panel-title">О приложении</h2>
-                    <div class="app-details">
-                        <div class="app-header-row"><span class="app-version-badge">LOADER ASTR v1.0.0 Beta</span><span style="font-size: 13px; color: #666;">Build: 2025.11.25</span></div>
-                        <div class="app-description-block">
-                            <p class="app-desc-text">Это универсальный лаунчер-загрузчик модов в игру <strong>Tanks Blitz</strong>.</p>
-                            <ul class="app-features-list-new">
-                                <li>Учитывает <strong>sDLS</strong> (Steam DLC System)</li>
-                                <li>Поддерживает обычные обновления</li>
-                                <li>Автоматические бэкапы</li>
-                                <li>Удобный каталог модификаций</li>
-                                <li>Быстрое восстановление игры</li>
-                            </ul>
-                        </div>
-                        <div style="flex-grow: 1;"></div>
-                        <div class="app-footer-row"><p class="app-credits">(C) Launcher 2025</p></div>
-                    </div>
-                </div>
+                <div class="big-panel app-info-panel"><h2 class="panel-title">О приложении</h2><div class="app-details"><div class="app-header-row"><span class="app-version-badge">LOADER ASTR v1.0.0 Beta</span><span style="font-size: 13px; color: #666;">Build: 2025.11.25</span></div><div class="app-description-block"><p class="app-desc-text">Это универсальный лаунчер-загрузчик модов в игру <strong>Tanks Blitz</strong>.</p><ul class="app-features-list-new"><li>Учитывает <strong>sDLS</strong> (Steam DLC System)</li><li>Поддерживает обычные обновления</li><li>Автоматические бэкапы</li><li>Удобный каталог модификаций</li><li>Быстрое восстановление игры</li></ul></div><div style="flex-grow: 1;"></div><div class="app-footer-row"><p class="app-credits">(C) Launcher 2025</p></div></div></div>
             </div>`;
-    } catch (error) { contentArea.innerHTML = `<p style="color:#ff5252;">Ошибка авторов: ${error.message}</p>`; }
+    } catch (error) { contentArea.innerHTML = `<p style="color:#ff5252;">Ошибка авторов.</p>`; }
 }
 
 function startInstallProcess(id, name, url) {
     if(!window.pywebview) return;
+    if(url && !url.startsWith('http')) url = REPO_BASE_URL + url;
     installView.classList.remove('view-hidden'); successView.classList.add('view-hidden'); errorView.classList.add('view-hidden');
     progressBar.style.width = "0%"; progressPercent.innerText = "0%"; modalTitle.innerText = name; modalStatus.innerText = "Подготовка...";
     modal.classList.remove('hidden');
