@@ -45,8 +45,7 @@ let globalInstalledIds = [];
 let newUpdateUrl = "";
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- ИНИЦИАЛИЗАЦИЯ МОДАЛКИ БЛОКИРОВКИ ---
-    createGeoModal();
+    createGeoModal(); // Инициализируем скрытое окно блокировки
 
     const savedColor = localStorage.getItem('accentColor');
     if (savedColor) {
@@ -70,45 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('pywebviewready', checkEnvironment);
-
-// --- ФУНКЦИЯ СОЗДАНИЯ ОКНА БЛОКИРОВКИ (ДИНАМИЧЕСКИ) ---
-function createGeoModal() {
-    // Создаем элементы, используя существующие классы стилей
-    const overlay = document.createElement('div');
-    overlay.id = 'geo-modal';
-    overlay.className = 'modal-overlay hidden';
-    overlay.style.zIndex = '10000'; // Поверх всего
-
-    const content = document.createElement('div');
-    content.className = 'modal-content';
-    content.style.textAlign = 'center';
-    content.style.maxWidth = '400px';
-
-    content.innerHTML = `
-        <span class="material-symbols-outlined" style="font-size: 48px; color: #ff5252; margin-bottom: 16px;">public_off</span>
-        <h3 style="margin-bottom: 10px;">Доступ ограничен</h3>
-        <p style="color: #938f99; margin-bottom: 24px; line-height: 1.5;">
-            Обнаружен IP-адрес из региона, доступ для которого ограничен (UA).<br>
-            Пожалуйста, включите VPN (RU/EU) и перезапустите лаунчер.
-        </p>
-        <button id="geo-restart-btn" class="install-btn" style="background-color: #ff5252; color: white;">
-            <span class="material-symbols-outlined">restart_alt</span>
-            Перезапустить
-        </button>
-    `;
-
-    overlay.appendChild(content);
-    document.body.appendChild(overlay);
-
-    // Логика кнопки
-    document.getElementById('geo-restart-btn').addEventListener('click', () => {
-        if(window.pywebview) {
-            window.pywebview.api.restart_app();
-        } else {
-            location.reload();
-        }
-    });
-}
 
 function showToast(msg) {
     if(!toast) return;
@@ -208,7 +168,6 @@ function applyAccentColor(color) {
 function renderSettings() {
     let col = getComputedStyle(document.documentElement).getPropertyValue('--md-sys-color-primary').trim();
     
-    // --- ОРИГИНАЛЬНЫЙ HTML с одной вставкой кнопки теста ---
     contentArea.innerHTML = `
         <div class="full-height-container">
             <div class="big-panel shrink-panel">
@@ -240,27 +199,12 @@ function renderSettings() {
                         <span class="material-symbols-outlined">restart_alt</span>
                         Сбросить тему
                     </button>
-                    
-                    <!-- ВСТАВКА КНОПКИ ТЕСТА (Стилизована под reset-theme-btn для единства) -->
-                    <div style="width: 100%; height: 1px; background: rgba(255,255,255,0.05); margin: 20px 0;"></div>
-                    
-                    <div class="picker-info" style="margin-bottom: 10px;">
-                        <h3>Тест функционала</h3>
-                        <p>Проверка блокировки по IP (для отладки)</p>
-                    </div>
-                    
-                    <button class="reset-theme-btn" id="btn-test-geo">
-                        <span class="material-symbols-outlined">public</span>
-                        Тест региона (IP)
-                    </button>
-                    <!-- КОНЕЦ ВСТАВКИ -->
 
                 </div>
             </div>
         </div>
     `;
 
-    // --- ЛОГИКА НАСТРОЕК (ОРИГИНАЛ + ТЕСТ) ---
     const slider = document.getElementById('accent-hue-slider');
     const preview = document.getElementById('current-color-preview');
     const resetBtn = document.getElementById('reset-theme-btn');
@@ -289,35 +233,6 @@ function renderSettings() {
         applyAccentColor('#d0bcff');
         renderSettings(); 
     });
-
-    // --- ЛОГИКА КНОПКИ ТЕСТА ---
-    const testBtn = document.getElementById('btn-test-geo');
-    testBtn.addEventListener('click', async () => {
-        if (!window.pywebview) {
-            showToast("Работает только в приложении");
-            return;
-        }
-        
-        // Показываем спиннер
-        const oldHtml = testBtn.innerHTML;
-        testBtn.innerHTML = '<span class="material-symbols-outlined spin">sync</span> Проверка...';
-        testBtn.disabled = true;
-
-        try {
-            const res = await window.pywebview.api.check_connection_status();
-            if (res.status === 'blocked') {
-                // Показываем модалку блокировки
-                document.getElementById('geo-modal').classList.remove('hidden');
-            } else {
-                showToast("Все отлично: IP доступен");
-            }
-        } catch(e) {
-            showToast("Ошибка проверки");
-        } finally {
-            testBtn.innerHTML = oldHtml;
-            testBtn.disabled = false;
-        }
-    });
 }
 
 function checkEnvironment() {
@@ -333,15 +248,7 @@ function checkEnvironment() {
             globalInstalledIds = ids;
             loadMods(false); 
         });
-
-        // --- АВТОМАТИЧЕСКАЯ ПРОВЕРКА ПРИ СТАРТЕ ---
-        window.pywebview.api.check_connection_status().then(res => {
-            if (res.status === 'blocked') {
-                 document.getElementById('geo-modal').classList.remove('hidden');
-            } else {
-                checkForUpdates(); // Если не заблочено, чекаем обновы
-            }
-        });
+        checkForUpdates();
     }
 }
 
@@ -487,6 +394,12 @@ function renderAboutPage() {
                 <div class="authors-list" id="authors-list-container">
                     <div class="loader-spinner"><div class="spinner"></div></div>
                 </div>
+                <!-- КНОПКА VPN TEST -->
+                <div style="margin-top:auto; padding-top:20px; border-top:1px solid rgba(255,255,255,0.05);">
+                    <button id="vpn-test-btn" class="install-btn" style="background:rgba(255,255,255,0.05); width:auto; font-size:12px; padding:8px 16px;">
+                         <span class="material-symbols-outlined" style="font-size:16px;">shield</span> VPN Test
+                    </button>
+                </div>
             </div>
         </div>
     `;
@@ -519,6 +432,35 @@ function renderAboutPage() {
             const c = document.getElementById('authors-list-container');
             if(c) c.innerHTML = '<p style="color:#777; text-align:center;">Ошибка загрузки авторов</p>';
         });
+    
+    // Привязываем событие к кнопке VPN (она только что была создана)
+    setTimeout(() => {
+        const vpnBtn = document.getElementById('vpn-test-btn');
+        if(vpnBtn) {
+            vpnBtn.addEventListener('click', async () => {
+                if(!window.pywebview) {
+                    showToast("Доступно только в приложении");
+                    return;
+                }
+                
+                vpnBtn.innerHTML = '<span class="material-symbols-outlined spin" style="font-size:16px;">sync</span> Checking...';
+                
+                try {
+                    const res = await window.pywebview.api.check_connection_status();
+                    if(res.status === 'blocked') {
+                        const m = document.getElementById('geo-modal');
+                        if(m) m.classList.remove('hidden');
+                    } else {
+                        showToast("IP чист (доступ разрешен)");
+                    }
+                } catch(e) {
+                    showToast("Ошибка проверки");
+                } finally {
+                    vpnBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">shield</span> VPN Test';
+                }
+            });
+        }
+    }, 100);
 }
 
 async function loadMods(force = true) {
@@ -761,3 +703,37 @@ async function restoreMod(id, name) {
 if(repairCloseBtn) repairCloseBtn.addEventListener('click', () => repairModal.classList.add('hidden'));
 const rb = document.getElementById('global-repair-btn');
 if(rb) rb.addEventListener('click', openRepairModal);
+
+// --- СОЗДАНИЕ ОКНА БЛОКИРОВКИ ---
+function createGeoModal() {
+    const overlay = document.createElement('div');
+    overlay.id = 'geo-modal';
+    overlay.className = 'modal-overlay hidden';
+    overlay.style.zIndex = '10000';
+
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    content.style.textAlign = 'center';
+    content.style.maxWidth = '420px';
+    content.style.border = '1px solid #ff5252';
+
+    content.innerHTML = `
+        <span class="material-symbols-outlined" style="font-size: 48px; color: #ff5252; margin-bottom: 16px;">public_off</span>
+        <h3 style="margin-bottom: 10px; color: #ff5252;">Доступ ограничен</h3>
+        <p style="color: var(--md-sys-color-on-surface); margin-bottom: 24px; line-height: 1.5;">
+            Обнаружен IP-адрес Украины.<br>
+            Пожалуйста, включите <b>VPN (Россия/Европа)</b> для доступа.
+        </p>
+        <button id="geo-close-btn" class="install-btn" style="background-color: #ff5252; color: white;">
+            <span class="material-symbols-outlined">check</span>
+            Понял
+        </button>
+    `;
+
+    overlay.appendChild(content);
+    document.body.appendChild(overlay);
+    
+    document.getElementById('geo-close-btn').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+    });
+}
