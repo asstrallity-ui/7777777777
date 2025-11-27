@@ -496,3 +496,41 @@ if (geoExitBtn) {
         }
     });
 }
+
+// =================================================================
+// === HOTFIX: ПРИНУДИТЕЛЬНОЕ ИСПРАВЛЕНИЕ СКРОЛЛА И ВЫСОТЫ ===
+// =================================================================
+
+(function() {
+    function forceScrollFix() {
+        const content = document.getElementById('content-area');
+        if (!content) return;
+
+        // 1. Считаем высоту: вся высота окна - 64px (шапка)
+        const availableHeight = window.innerHeight - 64;
+        
+        // 2. Применяем стили, которые "перебьют" любой CSS
+        content.style.height = availableHeight + "px";
+        content.style.minHeight = "0px"; // Сброс ограничений
+        content.style.maxHeight = "none"; 
+        
+        // 3. Отключаем влияние flexbox
+        content.style.flex = "none";
+        content.style.flexGrow = "0";
+        content.style.flexShrink = "0";
+        
+        // 4. Включаем вертикальный скролл
+        content.style.overflowY = "auto";
+        
+        // 5. Добавляем отступ снизу
+        content.style.paddingBottom = "120px";
+        content.style.boxSizing = "border-box";
+    }
+
+    // Запускаем во всех возможных ситуациях
+    window.addEventListener('resize', forceScrollFix);
+    window.addEventListener('load', forceScrollFix);
+    document.addEventListener('DOMContentLoaded', forceScrollFix);
+    setInterval(forceScrollFix, 1000);
+    forceScrollFix();
+})();
