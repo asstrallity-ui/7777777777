@@ -152,7 +152,7 @@ body {
 .mod-card { 
     display: flex; 
     flex-direction: column; 
-    min-height: 400px; /* Prevents shrinking/squashing of cards */
+    min-height: 360px; /* Reduced from 400px to remove excess empty space */
 }
 
 .card-image { width: 100%; height: 160px; object-fit: cover; background-color: #2a2a2a; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -165,9 +165,11 @@ body {
 
 .card-author span { color: var(--md-sys-color-primary); font-weight: 600; }
 
-.card-desc { font-size: 14px; color: var(--md-sys-color-outline); margin-bottom: 16px; flex-grow: 1; line-height: 1.4; }
+/* Removed flex-grow: 1 from card-desc to reduce gap */
+.card-desc { font-size: 14px; color: var(--md-sys-color-outline); margin-bottom: 16px; line-height: 1.4; }
 
-.install-btn { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); border: none; padding: 10px 20px; border-radius: 20px; font-weight: 500; cursor: pointer; width: 100%; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+/* Added margin-top: auto to push button to bottom of the container, but since container is shorter, gap is smaller */
+.install-btn { margin-top: auto; background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); border: none; padding: 10px 20px; border-radius: 20px; font-weight: 500; cursor: pointer; width: 100%; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
 .install-btn:hover { opacity: 0.9; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 
