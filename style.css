@@ -239,7 +239,7 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
-    min-height: 0; /* важно для внутренних скроллов */
+    min-height: 0; /* критично для внутреннего скролла */
 }
 
 .top-bar {
@@ -351,8 +351,8 @@ body {
     padding: 32px;
     overflow-y: auto;
     overflow-x: hidden;
-    flex: 1;        /* занимает всё оставшееся место */
-    min-height: 0;  /* позволяет контенту ужаться и включить скролл */
+    flex: 1;        /* занимает всё оставшееся место под топбаром */
+    min-height: 0;  /* даём блоку сжаться и включить скролл */
     transition: opacity 0.25s ease-out, transform 0.25s ease-out;
     opacity: 1;
     transform: translateY(0);
@@ -550,7 +550,7 @@ body {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 4px;
-    color: #ffffff;
+    color: #fff;
 }
 
 .picker-info p {
@@ -597,7 +597,7 @@ body {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #ffffff;
+    background: #fff;
     border: 2px solid rgba(0, 0, 0, 0.2);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     cursor: pointer;
@@ -621,7 +621,7 @@ body {
 
 .color-preset:hover {
     transform: scale(1.2);
-    border-color: #ffffff;
+    border-color: #fff;
 }
 
 .reset-theme-btn {
@@ -745,7 +745,7 @@ body {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 4px;
-    color: #ffffff;
+    color: #fff;
     transition: 0.2s;
 }
 
@@ -956,7 +956,7 @@ input:checked + .slider:before {
 .author-details p {
     font-size: 13px;
     line-height: 1.4;
-    color: #cccccc;
+    color: #ccc;
     margin: 0;
 }
 
@@ -986,7 +986,7 @@ input:checked + .slider:before {
 .app-version-badge {
     border: 1px solid var(--md-sys-color-primary);
     background: rgba(var(--md-sys-color-primary-rgb), 0.1);
-    color: #ffffff;
+    color: #fff;
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 13px;
@@ -1007,7 +1007,7 @@ input:checked + .slider:before {
 }
 
 .app-desc-text strong {
-    color: #ffffff;
+    color: #fff;
     font-weight: 600;
 }
 
@@ -1040,7 +1040,7 @@ input:checked + .slider:before {
 }
 
 .app-features-list-new li strong {
-    color: #ffffff;
+    color: #fff;
     font-weight: 500;
 }
 
@@ -1054,7 +1054,7 @@ input:checked + .slider:before {
 
 .app-credits {
     font-size: 13px;
-    color: #666666;
+    color: #666;
 }
 
 /* REPAIR FAB */
@@ -1140,7 +1140,7 @@ input:checked + .slider:before {
 .modal-content h3 {
     font-size: 20px;
     font-weight: 600;
-    color: #ffffff;
+    color: #fff;
     margin-bottom: 16px;
     letter-spacing: 0.5px;
 }
@@ -1167,7 +1167,7 @@ input:checked + .slider:before {
 
 .modal-close-icon:hover {
     background: rgba(255, 255, 255, 0.05);
-    color: #ffffff;
+    color: #fff;
     border-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -1201,7 +1201,7 @@ input:checked + .slider:before {
 
 .repair-item span {
     font-size: 15px;
-    color: #ffffff;
+    color: #fff;
     font-weight: 500;
 }
 
@@ -1499,8 +1499,8 @@ input:checked + .slider:before {
     bottom: 32px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #333333;
-    color: #ffffff;
+    background-color: #333;
+    color: #fff;
     padding: 12px 24px;
     border-radius: 50px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
