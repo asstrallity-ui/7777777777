@@ -81,11 +81,25 @@ body {
     display: flex; 
     flex-direction: column; 
     position: relative; 
-    height: 100%; /* Ensure it fills height */
-    overflow: hidden; /* Prevent container scroll */
+    height: 100vh; /* Жёстко задаем высоту равной окну */
+    overflow: hidden; /* Запрещаем скролл самого контейнера */
+    min-height: 0; /* Критично для flex-контейнеров */
 }
 
-.top-bar { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); border-bottom: 1px solid var(--glass-border); border-left: none; border-right: none; border-top: none; flex-shrink: 0; }
+.top-bar { 
+    height: 64px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 0 32px; 
+    background: var(--glass-bg); 
+    backdrop-filter: blur(var(--glass-blur)); 
+    border-bottom: 1px solid var(--glass-border); 
+    border-left: none; 
+    border-right: none; 
+    border-top: none; 
+    flex-shrink: 0; /* Запрещаем сжатие шапки */
+}
 
 .top-bar-actions { display: flex; align-items: center; gap: 20px; }
 
@@ -110,19 +124,53 @@ body {
 /* === SCROLL FIX === */
 #content-area { 
     padding: 32px; 
-    padding-bottom: 80px; /* Extra space at bottom */
+    /* padding-bottom для контента, чтобы не прилипал к низу */
+    padding-bottom: 80px; 
+    
+    /* Включаем скролл */
     overflow-y: auto; 
-    flex: 1; /* Grow to fill remaining space */
-    height: auto; /* Remove fixed calc */
-    min-height: 0; /* For flex scrolling */
+    
+    /* Flex параметры, чтобы занимать ВСЕ оставшееся место */
+    flex: 1 1 auto; 
+    
+    /* Важно! Иначе контент растянет родителя, а не включит скролл */
+    height: 0; 
+    min-height: 0;
+    
+    /* Визуальные эффекты */
     transition: opacity 0.25s ease-out, transform 0.25s ease-out; 
     opacity: 1; 
-    transform: translateY(0); 
+    transform: translateY(0);
+    
+    /* Стилизация скроллбара (опционально, для красоты) */
+    scrollbar-width: thin;
+    scrollbar-color: var(--md-sys-color-primary) transparent;
+}
+
+/* Стилизация скроллбара для Webkit (Chrome/Edge) */
+#content-area::-webkit-scrollbar {
+    width: 8px;
+}
+#content-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+#content-area::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--md-sys-color-primary-rgb), 0.3);
+    border-radius: 4px;
+}
+#content-area::-webkit-scrollbar-thumb:hover {
+    background-color: var(--md-sys-color-primary);
 }
 
 #content-area.fade-out { opacity: 0; transform: translateY(10px); }
 
-.content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; align-content: start; }
+.content-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+    gap: 24px; 
+    align-content: start; 
+    height: auto; /* Убрали 100%, чтобы грид рос */
+}
 
 .mod-card, .method-card-new, .big-panel { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 24px; transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; overflow: hidden; position: relative; box-shadow: var(--glass-shadow); }
 
